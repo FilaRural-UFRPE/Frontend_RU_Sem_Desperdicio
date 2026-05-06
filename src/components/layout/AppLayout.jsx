@@ -1,0 +1,112 @@
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import Logo from '../ui/Logo'
+import {
+  LayoutDashboard, Calendar, History, User, LogOut,
+  BarChart3, ClipboardList, Menu,
+} from 'lucide-react'
+import { useState } from 'react'
+import { userTypeLabel } from '../../utils/helpers'
+
+const studentLinks = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Início' },
+  { to: '/agendar', icon: Calendar, label: 'Agendar' },
+  { to: '/historico', icon: History, label: 'Histórico' },
+  { to: '/perfil', icon: User, label: 'Perfil' },
+]
+
+const staffLinks = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral' },
+  { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
+  { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
+  { to: '/perfil', icon: User, label: 'Perfil' },
+]
+
+export default function AppLayout({ children }) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const links = user?.type === 'funcionario' ? staffLinks : studentLinks
+
+  const handleLogout = () => { logout(); navigate('/login') }
+
+  const NavItem = ({ to, icon: Icon, label }) => (
+    <NavLink
+      to={to}
+      end
+      onClick={() => setMobileOpen(false)}
+      className={({ isActive }) =>
+        `flex items-center gap-3 px-4 py-2.5 rounded-xl font-body font-medium text-sm transition-all duration-150 ${
+          isActive
+            ? 'bg-ru-blue text-white shadow-sm'
+            : 'text-ru-charcoal hover:bg-ru-cream-dark'
+        }`
+      }
+    >
+      <Icon size={17} />
+      {label}
+    </NavLink>
+  )
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-4 py-5 border-b border-ru-cream-dark">
+        <Logo variant="full" size={36} />
+      </div>
+
+      {/* User badge */}
+      <div className="mx-3 mt-4 mb-2 px-3 py-2.5 bg-ru-cream rounded-xl">
+        <p className="font-body font-medium text-ru-charcoal text-sm truncate">{user?.name?.split(' ')[0]}</p>
+        <p className="text-xs text-ru-muted font-body">{userTypeLabel(user?.type)}</p>
+      </div>
+
+      {/* Links */}
+      <nav className="flex-1 px-3 py-2 flex flex-col gap-1">
+        {links.map((l) => <NavItem key={l.to} {...l} />)}
+      </nav>
+
+      {/* Logout */}
+      <div className="px-3 py-4 border-t border-ru-cream-dark">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm font-body font-medium text-red-500 hover:bg-red-50 transition-colors"
+        >
+          <LogOut size={17} />
+          Sair
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex min-h-screen bg-ru-cream">
+      <aside className="hidden lg:flex flex-col w-56 bg-white border-r border-ru-cream-dark fixed h-full z-30">
+        <SidebarContent />
+      </aside>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-56 bg-white shadow-xl">
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+
+      <div className="flex-1 lg:ml-56 flex flex-col min-h-screen">
+        <header className="lg:hidden flex items-center justify-between px-4 py-4 bg-white border-b border-ru-cream-dark sticky top-0 z-20">
+          <Logo variant="full" size={32} />
+          <button onClick={() => setMobileOpen(true)} className="text-ru-charcoal">
+            <Menu size={22} />
+          </button>
+        </header>
+
+        <main className="flex-1 p-6 animate-fade-in">
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}
