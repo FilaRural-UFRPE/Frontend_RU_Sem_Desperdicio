@@ -7,7 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Restaura sessão do localStorage ao carregar
   useEffect(() => {
     const stored = localStorage.getItem('smartru_user')
     const token = localStorage.getItem('smartru_token')
@@ -18,28 +17,29 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback(async (cpf, password) => {
-  const { data } = await authAPI.login({ cpf, password })
-  
-  if (data.success) {
-    // Monta o objeto user com base no array retornado pelo backend
-    const [role, name, email, userCpf, enrollment, register_date] = data.data
+    const { data } = await authAPI.login({ cpf, password })
     
-    const user = {
-      type: role,
-      name,
-      email,
-      cpf: userCpf,
-      enrollment,
+    console.log('resposta completa:', JSON.stringify(data))
+
+    if (data.success) {
+      const [role, name, email, userCpf, enrollment, register_date] = data.data
+      
+      const user = {
+        type: role,
+        name,
+        email,
+        cpf: userCpf,
+        enrollment,
+      }
+
+      localStorage.setItem('smartru_token', 'token-provisorio')
+      localStorage.setItem('smartru_user', JSON.stringify(user))
+      setUser(user)
+      return user
     }
 
-    localStorage.setItem('smartru_token', 'token-provisorio')
-    localStorage.setItem('smartru_user', JSON.stringify(user))
-    setUser(user)
-    return user
-  }
-
-  throw new Error(data.msg || 'Credenciais inválidas')
-}, [])
+    throw new Error(data.msg || 'Credenciais inválidas')
+  }, [])
 
   const register = useCallback(async (payload) => {
     const { data } = await authAPI.register(payload)

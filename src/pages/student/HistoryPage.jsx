@@ -25,11 +25,13 @@ export default function HistoryPage() {
   scheduleAPI.mySchedules(user.cpf)
     .then(({ data }) => {
       const raw = data?.data || []
-      const parsed = raw.map(([id, schedule_type, schedule_date, estimated_time]) => ({
-        id,
-        schedule_type,
-        schedule_date,
-        estimated_time,
+      // Backend agora retorna objetos diretamente
+      const parsed = raw.map((s) => ({
+        id: s.id,
+        schedule_type: s.schedule_type,
+        schedule_date: s.schedule_date,
+        estimated_time: s.estimated_time,
+        created_at: s.created_at,
       }))
       setSchedules(parsed)
     })
@@ -120,8 +122,8 @@ export default function HistoryPage() {
                   {mealLabel(s.schedule_type)}
                 </p>
                 <p className="text-xs text-ru-muted font-body mt-0.5">
-                  📅 {s.schedule_date} · 🕐 {s.estimated_time}
-                </p>
+  📅 {s.schedule_date?.split('T')[0]} · 🕐 {s.estimated_time?.slice(0, 5)}
+</p>
               </div>
 
               <div className="flex gap-2 flex-shrink-0">

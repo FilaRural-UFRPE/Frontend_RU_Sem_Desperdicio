@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import Logo from '../ui/Logo'
 import {
   LayoutDashboard, Calendar, History, User, LogOut,
-  BarChart3, ClipboardList, Menu,
+  BarChart3, ClipboardList, Menu, Lock,
 } from 'lucide-react'
 import { useState } from 'react'
 import { userTypeLabel } from '../../utils/helpers'
@@ -13,6 +13,7 @@ const studentLinks = [
   { to: '/agendar', icon: Calendar, label: 'Agendar' },
   { to: '/historico', icon: History, label: 'Histórico' },
   { to: '/perfil', icon: User, label: 'Perfil' },
+  { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]
 
 const staffLinks = [
@@ -20,6 +21,7 @@ const staffLinks = [
   { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
   { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
   { to: '/perfil', icon: User, label: 'Perfil' },
+  { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]
 
 export default function AppLayout({ children }) {

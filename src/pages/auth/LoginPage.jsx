@@ -35,7 +35,7 @@ export default function LoginPage() {
       toast(`Bem-vindo(a), ${user.name.split(' ')[0]}! 👋`)
       navigate('/dashboard')
     } catch (err) {
-      toast(getErrorMessage(err), 'error')
+      setErrors({ form: 'CPF ou senha incorretos. Tente novamente.' })
     } finally {
       setLoading(false)
     }
@@ -50,7 +50,6 @@ export default function LoginPage() {
         <div className="absolute top-1/2 right-8 w-40 h-40 bg-ru-yellow opacity-10 rounded-full" />
 
         <div className="relative">
-          {/* Logo grande no painel */}
           <div className="flex items-center gap-4 mb-12">
             <img src={logoImg} alt="Smart RU" className="w-16 h-16 object-contain rounded-2xl bg-white/10 p-1" />
             <div>
@@ -100,15 +99,32 @@ export default function LoginPage() {
               error={errors.cpf}
               inputMode="numeric"
             />
-            <FormInput
-              label="Senha"
-              icon={Lock}
-              type="password"
-              placeholder="Sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={errors.password}
-            />
+            <div>
+              <FormInput
+                label="Senha"
+                icon={Lock}
+                type="password"
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={errors.password}
+              />
+              {/* 👈 Link de recuperação de senha */}
+              <div className="text-right mt-1">
+                <Link to="/recuperar-senha" className="text-xs text-ru-blue font-body hover:underline">
+                  Esqueceste a senha?
+                </Link>
+              </div>
+            </div>
+
+            {/* Mensagem de erro geral */}
+            {errors.form && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
+                <span className="text-red-500 text-sm">⚠️</span>
+                <p className="text-red-600 text-sm font-body">{errors.form}</p>
+              </div>
+            )}
+
             <button type="submit" disabled={loading} className="btn-primary mt-2 flex items-center justify-center gap-2">
               {loading ? <Spinner size={18} /> : 'Entrar'}
             </button>

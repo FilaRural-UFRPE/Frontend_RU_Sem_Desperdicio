@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "5fad013e-1d23-4c8f-bd6c-5a63d52242fc"
+      }
+    },
+    "android": {
+      "package": "com.kavela.smartru"
+    }
+  }
+}

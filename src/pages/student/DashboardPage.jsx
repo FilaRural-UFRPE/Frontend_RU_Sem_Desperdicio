@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { scheduleAPI } from '../../services/api'
-import { Calendar, History, User, Clock, CheckCircle, XCircle } from 'lucide-react'
-import { formatDate, mealLabel } from '../../utils/helpers'
+import { Calendar, History, User, Clock, CheckCircle } from 'lucide-react'
 
 export default function StudentDashboard() {
   const { user } = useAuth()
@@ -11,24 +10,27 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    scheduleAPI.mySchedules()
+    if (!user?.cpf) return
+    scheduleAPI.mySchedules(user.cpf)
       .then(({ data }) => {
-        const active = (data || [])
-          .filter((s) => s.status === 'ativo')
-          .sort((a, b) => new Date(a.date) - new Date(b.date))
-          .slice(0, 3)
-        setUpcoming(active)
+        const raw = data?.data || []
+        const parsed = raw.map(([id, schedule_type, schedule_date, estimated_time]) => ({
+          id,
+          schedule_type,
+          schedule_date,
+          estimated_time,
+        }))
+        setUpcoming(parsed.slice(0, 3))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Saudação */}
       <div className="mb-8">
         <p className="text-ru-muted font-body text-sm">{greeting} 👋</p>
         <h1 className="font-display font-bold text-2xl text-ru-charcoal">
@@ -36,7 +38,6 @@ export default function StudentDashboard() {
         </h1>
       </div>
 
-      {/* Ações rápidas */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <Link to="/agendar" className="card hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue">
           <div className="w-10 h-10 bg-ru-blue/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-ru-blue transition-colors">
@@ -71,7 +72,6 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Próximos agendamentos */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display font-semibold text-ru-charcoal">Próximas refeições</h2>
@@ -98,8 +98,10 @@ export default function StudentDashboard() {
                   <Clock size={15} className="text-ru-blue" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-body font-medium text-ru-charcoal">{mealLabel(s.meal_type)}</p>
-                  <p className="text-xs text-ru-muted">{formatDate(s.date)}</p>
+                  <p className="text-sm font-body font-medium text-ru-charcoal">
+                    {s.schedule_type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar'}
+                  </p>
+                  <p className="text-xs text-ru-muted">{s.schedule_date} · {s.estimated_time}</p>
                 </div>
                 <CheckCircle size={16} className="text-blue-700" />
               </div>

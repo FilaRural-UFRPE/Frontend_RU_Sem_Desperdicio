@@ -7,12 +7,15 @@ import AppLayout from './components/layout/AppLayout'
 // Páginas públicas
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import PasswordRecoverPage from './pages/auth/PasswordRecoverPage'
+import PasswordResetPage from './pages/auth/PasswordResetPage'
 
 // Páginas autenticadas
 import DashboardRouter from './pages/DashboardRouter'
 import SchedulePage from './pages/student/SchedulePage'
 import HistoryPage from './pages/student/HistoryPage'
 import ProfilePage from './pages/student/ProfilePage'
+import ChangePasswordPage from './pages/student/ChangePasswordPage'
 
 // Páginas exclusivas do funcionário
 import AllSchedulesPage from './pages/staff/AllSchedulesPage'
@@ -20,7 +23,6 @@ import ReportsPage from './pages/staff/ReportsPage'
 
 // Utilitários
 import NotFoundPage from './pages/NotFoundPage'
-
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
             {/* Público */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/cadastro" element={<RegisterPage />} />
+            <Route path="/recuperar-senha" element={<PasswordRecoverPage />} />
+            <Route path="/redefinir-senha" element={<PasswordResetPage />} />
 
             {/* Raiz → login */}
             <Route path="/" element={<Navigate to="/login" replace />} />
@@ -65,6 +69,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AppLayout><ProfilePage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/alterar-senha"
+              element={
+                <ProtectedRoute>
+                  <AppLayout><ChangePasswordPage /></AppLayout>
                 </ProtectedRoute>
               }
             />

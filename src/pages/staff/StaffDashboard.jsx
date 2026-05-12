@@ -28,6 +28,8 @@ export default function StaffDashboard() {
     setLoading(true)
     try {
       const brDate = toBRDate(date)
+      console.log('date:', date)
+    console.log('brDate:', brDate)
 
       // Busca agendamentos do dia e demanda ao mesmo tempo
       const [schedulesRes, demandRes] = await Promise.all([

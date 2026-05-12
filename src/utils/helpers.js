@@ -53,11 +53,21 @@ export function userTypeLabel(type) {
 
 export function getErrorMessage(err) {
   const data = err?.response?.data
+  
   if (typeof data === 'string') return data
+  
   if (data?.detail) {
     if (typeof data.detail === 'string') return data.detail
     if (Array.isArray(data.detail)) return data.detail.map(d => d.msg).join(', ')
+    if (data.detail?.msg) {
+      const msg = data.detail.msg
+      // Mensagens amigáveis para erros conhecidos
+      if (msg.includes('duplicate key')) return 'Já tens uma refeição agendada para esse dia e tipo!'
+      if (msg.includes('unique constraint')) return 'Já tens uma refeição agendada para esse dia e tipo!'
+      return msg
+    }
   }
+  
   if (data?.msg) return data.msg
   if (data?.message) return data.message
   return err?.message || 'Ocorreu um erro inesperado.'

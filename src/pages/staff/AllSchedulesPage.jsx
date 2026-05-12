@@ -6,7 +6,6 @@ import { RefreshCw, Search } from 'lucide-react'
 
 const todayStr = new Date().toISOString().split('T')[0]
 
-// Converte YYYY-MM-DD para DD/MM/YYYY
 function toBRDate(dateStr) {
   const [y, m, d] = dateStr.split('-')
   return `${d}/${m}/${y}`
@@ -17,15 +16,15 @@ export default function AllSchedulesPage() {
   const [loading, setLoading] = useState(true)
   const [date, setDate] = useState(todayStr)
   const [search, setSearch] = useState('')
+  const [showingAll, setShowingAll] = useState(false)
   const { toast } = useToast()
 
-  const load = () => {
+  const load = (filterDate = null) => {
     setLoading(true)
-    const brDate = toBRDate(date)
-    scheduleAPI.allSchedules(brDate)
+    setShowingAll(!filterDate)
+    scheduleAPI.allSchedules(filterDate)
       .then(({ data }) => {
         const raw = data?.data || []
-        // Backend agora retorna objetos com name incluído
         const parsed = raw.map((s) => ({
           id: s.id,
           user_name: s.name ?? null,
@@ -41,29 +40,45 @@ export default function AllSchedulesPage() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(load, [date])
+  useEffect(() => { load(toBRDate(date)) }, [])
 
-  const filtered = schedules.filter((s) =>
+ const filtered = schedules.filter((s) => {
+  const cleanSearch = search.replace(/\D/g, '') // remove pontos e traços
+  return (
     s.user_name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.user_cpf?.includes(search)
+    s.user_cpf?.includes(cleanSearch || search)
   )
+})
 
   return (
     <div className="max-w-3xl mx-auto">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-display font-bold text-2xl text-ru-charcoal">Agendamentos</h1>
-          <p className="text-ru-muted font-body text-sm mt-1">Histórico completo do RU</p>
+          <p className="text-ru-muted font-body text-sm mt-1">
+            {showingAll ? 'Todos os agendamentos' : `Agendamentos de ${toBRDate(date)}`}
+          </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="input-field w-auto text-sm py-2"
           />
-          <button onClick={load} className="btn-secondary px-3 py-2">
+          <button
+            onClick={() => load(toBRDate(date))}
+            className="btn-secondary px-3 py-2"
+            title="Filtrar por data"
+          >
             <RefreshCw size={15} />
+          </button>
+          <button
+            onClick={() => load(null)}
+            className="btn-primary px-4 py-2 text-sm"
+          >
+            Ver todos
           </button>
         </div>
       </div>
@@ -88,7 +103,9 @@ export default function AllSchedulesPage() {
         <div className="card text-center py-12">
           <p className="text-4xl mb-3">📋</p>
           <p className="font-display font-semibold text-ru-charcoal">Nenhum agendamento encontrado</p>
-          <p className="text-ru-muted font-body text-sm mt-1">{toBRDate(date)}</p>
+          <p className="text-ru-muted font-body text-sm mt-1">
+            {showingAll ? 'Sem agendamentos no sistema' : toBRDate(date)}
+          </p>
         </div>
       ) : (
         <div className="card overflow-x-auto p-0">
@@ -112,8 +129,8 @@ export default function AllSchedulesPage() {
                   <td className="px-5 py-3.5">
                     {s.schedule_type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar'}
                   </td>
-                  <td className="px-5 py-3.5">{s.schedule_date}</td>
-                  <td className="px-5 py-3.5">{s.estimated_time}</td>
+                  <td className="px-5 py-3.5">{s.schedule_date?.split('T')[0]}</td>
+                  <td className="px-5 py-3.5">{s.estimated_time?.slice(0, 5)}</td>
                   <td className="px-5 py-3.5">
                     <span className="tag bg-blue-50 text-blue-700">Ativo</span>
                   </td>
@@ -122,7 +139,7 @@ export default function AllSchedulesPage() {
             </tbody>
           </table>
           <div className="px-5 py-3 bg-ru-cream/50 text-xs text-ru-muted font-body rounded-b-2xl">
-            {filtered.length} registro(s) — {toBRDate(date)}
+            {filtered.length} registro(s) — {showingAll ? 'todos' : toBRDate(date)}
           </div>
         </div>
       )}
