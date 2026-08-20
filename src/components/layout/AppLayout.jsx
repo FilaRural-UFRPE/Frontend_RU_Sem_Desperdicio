@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import Logo from '../ui/Logo'
 import {
   LayoutDashboard, Calendar, History, User, LogOut,
-  BarChart3, ClipboardList, Menu, Lock,
+  BarChart3, ClipboardList, Menu, Lock, UtensilsCrossed, UploadCloud,
 } from 'lucide-react'
 import { useState } from 'react'
 import { userTypeLabel } from '../../utils/helpers'
@@ -12,6 +12,7 @@ const studentLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Início' },
   { to: '/agendar', icon: Calendar, label: 'Agendar' },
   { to: '/historico', icon: History, label: 'Histórico' },
+  { to: '/cardapio', icon: UtensilsCrossed, label: 'Cardápio da Semana' },
   { to: '/perfil', icon: User, label: 'Perfil' },
   { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]
@@ -20,6 +21,7 @@ const staffLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral' },
   { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
   { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
+  { to: '/cardapio-upload', icon: UploadCloud, label: 'Publicar Cardápio' }, // ✅ adicionado
   { to: '/perfil', icon: User, label: 'Perfil' },
   { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]

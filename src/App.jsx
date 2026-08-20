@@ -16,10 +16,12 @@ import SchedulePage from './pages/student/SchedulePage'
 import HistoryPage from './pages/student/HistoryPage'
 import ProfilePage from './pages/student/ProfilePage'
 import ChangePasswordPage from './pages/student/ChangePasswordPage'
+import MenuPage from './pages/student/MenuPage'
 
 // Páginas exclusivas do funcionário
 import AllSchedulesPage from './pages/staff/AllSchedulesPage'
 import ReportsPage from './pages/staff/ReportsPage'
+import MenuUploadPage from './pages/staff/MenuUploadPage' // ✅ adicionado
 
 // Utilitários
 import NotFoundPage from './pages/NotFoundPage'
@@ -80,6 +82,15 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Cardápio da Semana — estudantes e convidados */}
+            <Route
+              path="/cardapio"
+              element={
+                <ProtectedRoute>
+                  <AppLayout><MenuPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
 
             {/* Exclusivo funcionário */}
             <Route
@@ -95,6 +106,15 @@ export default function App() {
               element={
                 <ProtectedRoute allowedTypes={['funcionario']}>
                   <AppLayout><ReportsPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* ✅ Upload do cardápio — exclusivo funcionário */}
+            <Route
+              path="/cardapio-upload"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><MenuUploadPage /></AppLayout>
                 </ProtectedRoute>
               }
             />

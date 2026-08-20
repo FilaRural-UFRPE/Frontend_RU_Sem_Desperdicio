@@ -9,6 +9,20 @@ import { RefreshCw, X } from 'lucide-react'
 
 const today = new Date().toISOString().split('T')[0]
 
+const MEAL_TYPE_LABELS = {
+  select: '👑 Select',
+  leve_sabor: '🥗 Leve Sabor',
+  essencial: '🍱 Essencial',
+  vegetariano: '🌿 Vegetariano',
+}
+
+const MEAL_TYPES = [
+  { value: 'select', emoji: '👑', label: 'Select' },
+  { value: 'leve_sabor', emoji: '🥗', label: 'Leve Sabor' },
+  { value: 'essencial', emoji: '🍱', label: 'Essencial' },
+  { value: 'vegetariano', emoji: '🌿', label: 'Vegetariano' },
+]
+
 export default function HistoryPage() {
   const [schedules, setSchedules] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,30 +30,37 @@ export default function HistoryPage() {
   const [rescheduleModal, setRescheduleModal] = useState(null)
   const [newDate, setNewDate] = useState('')
   const [newTime, setNewTime] = useState('')
+  const [newMealOption, setNewMealOption] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const { toast } = useToast()
   const { user } = useAuth()
 
   const load = () => {
-  setLoading(true)
-  scheduleAPI.mySchedules(user.cpf)
-    .then(({ data }) => {
-      const raw = data?.data || []
-      // Backend agora retorna objetos diretamente
-      const parsed = raw.map((s) => ({
-        id: s.id,
-        schedule_type: s.schedule_type,
-        schedule_date: s.schedule_date,
-        estimated_time: s.estimated_time,
-        created_at: s.created_at,
-      }))
-      setSchedules(parsed)
-    })
-    .catch(() => toast('Erro ao carregar agendamentos', 'error'))
-    .finally(() => setLoading(false))
-}
+    setLoading(true)
+    scheduleAPI.mySchedules()
+      .then(({ data }) => {
+        const raw = data?.data || []
+        const parsed = raw.map((s) => ({
+          id: s.id,
+          schedule_type: s.schedule_type,
+          meal_option: s.meal_option || 'essencial', // ← atualizado
+          schedule_date: s.schedule_date,
+          estimated_time: s.estimated_time,
+          created_at: s.created_at,
+        }))
+        setSchedules(parsed)
+      })
+      .catch(() => toast('Erro ao carregar agendamentos', 'error'))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(load, [])
+
+  const toBackendDate = (dateStr) => {
+    const clean = dateStr?.split('T')[0]
+    const [year, month, day] = clean.split('-')
+    return `${day}/${month}/${year}`
+  }
 
   const handleCancel = async () => {
     setActionLoading(true)
@@ -47,7 +68,7 @@ export default function HistoryPage() {
       await scheduleAPI.cancel({
         user_cpf: user.cpf,
         schedule_type: cancelModal.schedule_type,
-        schedule_date: cancelModal.schedule_date,
+        schedule_date: toBackendDate(cancelModal.schedule_date),
       })
       toast('Agendamento cancelado.')
       setCancelModal(null)
@@ -62,21 +83,22 @@ export default function HistoryPage() {
   const handleReschedule = async () => {
     if (!newDate) { toast('Escolha uma nova data', 'warning'); return }
     if (!newTime) { toast('Escolha um novo horário', 'warning'); return }
+    if (!newMealOption) { toast('Escolha o tipo de refeição', 'warning'); return }
     setActionLoading(true)
     try {
-      const [year, month, day] = newDate.split('-')
-      const formattedDate = `${day}/${month}/${year}`
       await scheduleAPI.update({
         id: rescheduleModal.id,
         user_cpf: user.cpf,
         schedule_type: rescheduleModal.schedule_type,
-        schedule_date: formattedDate,
+        schedule_date: toBackendDate(newDate),
         estimated_time: newTime,
+        meal_option: newMealOption, // ← atualizado
       })
       toast('Reagendado com sucesso! ✅')
       setRescheduleModal(null)
       setNewDate('')
       setNewTime('')
+      setNewMealOption('')
       load()
     } catch (err) {
       toast(getErrorMessage(err), 'error')
@@ -122,13 +144,16 @@ export default function HistoryPage() {
                   {mealLabel(s.schedule_type)}
                 </p>
                 <p className="text-xs text-ru-muted font-body mt-0.5">
-  📅 {s.schedule_date?.split('T')[0]} · 🕐 {s.estimated_time?.slice(0, 5)}
-</p>
+                  {MEAL_TYPE_LABELS[s.meal_option] || s.meal_option}
+                </p>
+                <p className="text-xs text-ru-muted font-body mt-0.5">
+                  📅 {s.schedule_date?.split('T')[0]} · 🕐 {s.estimated_time?.slice(0, 5)}
+                </p>
               </div>
 
               <div className="flex gap-2 flex-shrink-0">
                 <button
-                  onClick={() => { setRescheduleModal(s); setNewDate(''); setNewTime('') }}
+                  onClick={() => { setRescheduleModal(s); setNewDate(''); setNewTime(''); setNewMealOption(s.meal_option || '') }}
                   className="p-2 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors"
                   title="Reagendar"
                 >
@@ -152,7 +177,7 @@ export default function HistoryPage() {
         <p className="font-body text-ru-charcoal text-sm mb-6">
           Tem certeza que deseja cancelar o{' '}
           <strong>{cancelModal?.schedule_type === 'lunch' ? 'almoço' : 'jantar'}</strong> do dia{' '}
-          <strong>{cancelModal?.schedule_date}</strong>?
+          <strong>{cancelModal?.schedule_date?.split('T')[0]}</strong>?
         </p>
         <div className="flex gap-3">
           <button onClick={() => setCancelModal(null)} className="btn-secondary flex-1">Voltar</button>
@@ -165,7 +190,7 @@ export default function HistoryPage() {
       {/* Modal reagendar */}
       <Modal open={!!rescheduleModal} onClose={() => setRescheduleModal(null)} title="Reagendar refeição">
         <p className="text-sm font-body text-ru-muted mb-4">
-          Escolha nova data e horário para o{' '}
+          Escolha nova data, horário e tipo para o{' '}
           <strong className="text-ru-charcoal">
             {rescheduleModal?.schedule_type === 'lunch' ? 'almoço' : 'jantar'}
           </strong>
@@ -178,6 +203,26 @@ export default function HistoryPage() {
           <div>
             <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">Novo horário</label>
             <input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} className="input-field" />
+          </div>
+          <div>
+            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">Tipo de refeição</label>
+            <div className="grid grid-cols-3 gap-2">
+              {MEAL_TYPES.map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setNewMealOption(m.value)}
+                  className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all ${
+                    newMealOption === m.value
+                      ? 'border-ru-blue bg-blue-50'
+                      : 'border-ru-cream-dark hover:border-ru-blue/40'
+                  }`}
+                >
+                  <span className="text-xl">{m.emoji}</span>
+                  <p className="font-display font-semibold text-ru-charcoal text-xs">{m.label}</p>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="flex gap-3">

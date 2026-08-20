@@ -1,26 +1,66 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://semdesperdicio.smartru.com.br/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://semdesperdicio.smartru.com.br/api',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true, // envia cookies HttpOnly automaticamente
 })
 
-// Injeta token JWT em todas as requisições autenticadas
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('smartru_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+// ─── Interceptor de refresh automático ────────────────
+let isRefreshing = false
+let failedQueue = []
 
-// Se token expirar (401), redireciona para login
+const processQueue = (error) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error)
+    else prom.resolve()
+  })
+  failedQueue = []
+}
+
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('smartru_token')
-      localStorage.removeItem('smartru_user')
-      window.location.href = '/login'
+  async (err) => {
+    const originalRequest = err.config
+    const status = err.response?.status
+
+    // 429 = rate limit → não tratar como sessão expirada
+    if (status === 429) {
+      return Promise.reject(err)
     }
+
+    // 403 = sem permissão → não tenta refresh
+    if (status === 403) {
+      return Promise.reject(err)
+    }
+
+    // 401 = sessão expirada → tenta refresh uma única vez
+    if (status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        })
+          .then(() => api(originalRequest))
+          .catch((e) => Promise.reject(e))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        await api.post('/user/refresh')
+        processQueue(null)
+        return api(originalRequest)
+      } catch (refreshErr) {
+        processQueue(refreshErr)
+        localStorage.removeItem('smartru_user')
+        window.location.href = '/login'
+        return Promise.reject(refreshErr)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
     return Promise.reject(err)
   }
 )
@@ -29,11 +69,14 @@ api.interceptors.response.use(
 export const authAPI = {
   login: (data) => api.post('/user/login', data),
   register: (data) => api.post('/user/register', data),
+  logout: () => api.post('/user/logout'),
+  refresh: () => api.post('/user/refresh'),
 }
 
 // ─── Usuário ──────────────────────────────────────────
 export const userAPI = {
   getAll: () => api.get('/users'),
+  count: () => api.get('/users/count'),
   updatePassword: (data) => api.put('/user/update_password', data),
   deleteAccount: (cpf) => api.delete('/user/delete', { data: { cpf } }),
   passwordRecover: (data) => api.post('/user/password_recover', data),
@@ -44,17 +87,35 @@ export const userAPI = {
 export const scheduleAPI = {
   create: (data) => api.post('/schedule/register', data),
   update: (data) => api.put('/schedule/update', data),
+  confirm: (data) => api.put('/schedule/confirm', data),
   cancel: (data) => api.delete('/schedule/delete', { data }),
-  mySchedules: (cpf) => {
-    if (!cpf) {
-      console.error('Erro: CPF não fornecido para buscar agendamentos.')
-      return Promise.reject('CPF obrigatório')
-    }
-    return api.get('/schedule/all', { params: { user_cpf: cpf } })
-  },
+  mySchedules: () => api.get('/schedule/me'),
   allSchedules: (date) => api.get('/schedule/all', {
     params: date ? { date } : {}
   }),
+}
+
+// ─── Cardápio ─────────────────────────────────────────
+export const menuAPI = {
+  upload: (formData) => api.post('/menu/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  current: () => api.get('/menu/current'),
+  image: (menuId, mealType = 'lunch') =>
+    api.get(`/menu/image/${menuId}/${mealType}`, { responseType: 'blob' }),
+}
+
+// ─── Dispositivo ──────────────────────────────────────
+export const deviceAPI = {
+  register: (data) => api.post('/device/register', data),
+}
+
+// ─── Notificações ─────────────────────────────────────
+export const notificationAPI = {
+  dailyReminder: () => api.post('/notification/daily-reminder/trigger'),
+  queueCollaboration: (data) => api.post('/notification/queue-collaboration/trigger', data),
+  listJobs: () => api.get('/notification/jobs'),
+  getJob: (jobId) => api.get(`/notification/jobs/${jobId}`),
 }
 
 // ─── Relatórios ───────────────────────────────────────

@@ -6,19 +6,24 @@ import FormInput from '../../components/ui/FormInput'
 import Spinner from '../../components/ui/Spinner'
 import Logo from '../../components/ui/Logo'
 import { maskCPF, validateCPF, getErrorMessage } from '../../utils/helpers'
-import { User, Mail, CreditCard, Lock, Hash, GraduationCap } from 'lucide-react'
+import { User, Mail, CreditCard, Lock, GraduationCap, MapPin } from 'lucide-react'
 
+// Funcionário removido do cadastro público conforme instrução do backend
 const TYPES = [
   { value: 'estudante', label: 'Estudante', icon: '🎓' },
-  { value: 'funcionario', label: 'Funcionário RU', icon: '👨‍🍳' },
   { value: 'convidado', label: 'Convidado', icon: '🤝' },
+]
+
+const ACADEMIC_UNITS = [
+  { value: 'sede', label: 'Sede (Dois Irmãos)' },
+  { value: 'uast', label: 'UAST (Serra Talhada)' },
 ]
 
 export default function RegisterPage() {
   const [type, setType] = useState('estudante')
   const [form, setForm] = useState({
     name: '', email: '', cpf: '', password: '', confirmPassword: '',
-    enrollment: '', employee_code: '',
+    enrollment: '', academic_unit: '',
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -36,7 +41,7 @@ export default function RegisterPage() {
     if (form.password.length < 8) e.password = 'Mínimo 8 caracteres'
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Senhas não coincidem'
     if (type === 'estudante' && !form.enrollment.trim()) e.enrollment = 'Matrícula obrigatória'
-    if (type === 'funcionario' && !form.employee_code.trim()) e.employee_code = 'Código obrigatório'
+    if (!form.academic_unit) e.academic_unit = 'Selecione sua unidade acadêmica'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -47,13 +52,14 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const payload = {
-  role: type,
-  name: form.name,
-  email: form.email,
-  cpf: form.cpf.replace(/\D/g, ''),
-  password: form.password,
-  enrollment: form.enrollment || null,
-}
+        role: type,
+        name: form.name,
+        email: form.email,
+        cpf: form.cpf.replace(/\D/g, ''),
+        password: form.password,
+        enrollment: form.enrollment || '',
+        academic_unit: form.academic_unit,
+      }
       await register(payload)
       toast('Cadastro realizado! Faça login para continuar.')
       navigate('/login')
@@ -103,16 +109,37 @@ export default function RegisterPage() {
               onChange={(e) => setForm((f) => ({ ...f, cpf: maskCPF(e.target.value) }))}
               error={errors.cpf} inputMode="numeric" />
 
+            {/* Unidade Acadêmica — obrigatório para todos os tipos */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-body font-medium text-ru-charcoal">
+                Unidade Acadêmica
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {ACADEMIC_UNITS.map((u) => (
+                  <button
+                    key={u.value}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, academic_unit: u.value }))}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 text-xs font-body font-medium transition-all ${
+                      form.academic_unit === u.value
+                        ? 'border-ru-blue bg-blue-50 text-ru-blue'
+                        : 'border-ru-cream-dark text-ru-muted hover:border-ru-blue/40'
+                    }`}
+                  >
+                    <MapPin size={14} />
+                    {u.label}
+                  </button>
+                ))}
+              </div>
+              {errors.academic_unit && <p className="text-xs text-red-500 font-body">{errors.academic_unit}</p>}
+            </div>
+
             {type === 'estudante' && (
               <FormInput label="Matrícula" icon={GraduationCap} placeholder="202312345"
                 value={form.enrollment} onChange={set('enrollment')} error={errors.enrollment} />
             )}
-            {type === 'funcionario' && (
-              <FormInput label="Código do funcionário RU" icon={Hash} placeholder="RU123"
-                value={form.employee_code} onChange={set('employee_code')} error={errors.employee_code} />
-            )}
 
-            <FormInput label="Senha" icon={Lock} type="password" placeholder="Mínimo 6 caracteres"
+            <FormInput label="Senha" icon={Lock} type="password" placeholder="Mínimo 8 caracteres"
               value={form.password} onChange={set('password')} error={errors.password} />
             <FormInput label="Confirmar senha" icon={Lock} type="password" placeholder="Repita a senha"
               value={form.confirmPassword} onChange={set('confirmPassword')} error={errors.confirmPassword} />

@@ -6,7 +6,12 @@ import { useToast } from '../../contexts/ToastContext'
 import { getErrorMessage, userTypeLabel } from '../../utils/helpers'
 import Modal from '../../components/ui/Modal'
 import Spinner from '../../components/ui/Spinner'
-import { User, Mail, CreditCard, Hash, GraduationCap, Trash2 } from 'lucide-react'
+import { User, Mail, CreditCard, Hash, GraduationCap, Trash2, MapPin } from 'lucide-react'
+
+const ACADEMIC_UNIT_LABELS = {
+  sede: 'Sede (Dois Irmãos)',
+  uast: 'UAST (Serra Talhada)',
+}
 
 export default function ProfilePage() {
   const { user, logout } = useAuth()
@@ -61,7 +66,14 @@ export default function ProfilePage() {
         </div>
         <div>
           <p className="font-display font-semibold text-ru-charcoal text-lg">{user?.name}</p>
-          <span className="tag bg-blue-50 text-blue-700">{userTypeLabel(user?.type)}</span>
+          <div className="flex gap-2 mt-1">
+            <span className="tag bg-blue-50 text-blue-700">{userTypeLabel(user?.type)}</span>
+            {user?.academic_unit && (
+              <span className="tag bg-emerald-50 text-emerald-700">
+                {ACADEMIC_UNIT_LABELS[user.academic_unit] || user.academic_unit}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -69,6 +81,7 @@ export default function ProfilePage() {
         <Field icon={User} label="Nome completo" value={user?.name} />
         <Field icon={Mail} label="Email" value={user?.email} />
         <Field icon={CreditCard} label="CPF" value={cpfFormatted} />
+        <Field icon={MapPin} label="Unidade Acadêmica" value={ACADEMIC_UNIT_LABELS[user?.academic_unit] || user?.academic_unit} />
         {user?.type === 'estudante' && (
           <Field icon={GraduationCap} label="Matrícula" value={user?.enrollment} />
         )}

@@ -2,7 +2,76 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { scheduleAPI } from '../../services/api'
-import { Calendar, History, User, Clock, CheckCircle } from 'lucide-react'
+import { Calendar, History, User, Clock, CheckCircle, Utensils } from 'lucide-react'
+
+const QUEUE_API_URL = 'https://filarural-visao-computacional-1.onrender.com/queue/status'
+
+// Mapeia o status textual da API para cor e rótulo amigável.
+// Propositalmente NÃO exibimos o número de pessoas na fila — só o nível.
+const QUEUE_STATUS_MAP = {
+  vazia:  { label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
+  pequena:{ label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
+  média:  { label: 'Fila média',   color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-500' },
+  grande: { label: 'Fila grande',  color: 'text-red-700',    bg: 'bg-red-50',    dot: 'bg-red-500' },
+}
+
+function QueueStatusCard() {
+  const [queue, setQueue] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchQueue = () => {
+      fetch(QUEUE_API_URL)
+        .then((res) => res.json())
+        .then((data) => setQueue(data))
+        .catch(() => setQueue(null))
+        .finally(() => setLoading(false))
+    }
+
+    fetchQueue() // busca imediatamente ao carregar a tela
+
+    // Atualiza a cada 5 minutos — mesmo intervalo do capture_and_analyze.py
+    const intervalId = setInterval(fetchQueue, 5 * 60 * 1000)
+
+    return () => clearInterval(intervalId) // limpa o intervalo ao sair da tela
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="card flex items-center justify-center py-4 mb-6">
+        <div className="w-5 h-5 border-2 border-ru-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!queue || !queue.available) {
+    return null // sem dado recente disponível — não mostra nada em vez de informação errada
+  }
+
+  const info = QUEUE_STATUS_MAP[queue.status] || QUEUE_STATUS_MAP.média
+
+  return (
+    <div className={`card ${info.bg} border-2 border-transparent mb-6`}>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+          <Utensils size={18} className={info.color} />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${info.dot}`} />
+            <p className={`font-display font-semibold ${info.color}`}>{info.label}</p>
+          </div>
+          <p className="text-xs text-ru-muted font-body mt-0.5">
+            ~{queue.waiting_time_minutes} min de espera estimada
+          </p>
+        </div>
+        {queue.is_stale && (
+          <span className="text-[10px] text-ru-muted font-body">atualizado há {Math.round(queue.age_minutes)} min</span>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function StudentDashboard() {
   const { user } = useAuth()
@@ -37,6 +106,8 @@ export default function StudentDashboard() {
           {user?.name?.split(' ')[0]}
         </h1>
       </div>
+
+      <QueueStatusCard />
 
       <div className="grid grid-cols-2 gap-4 mb-8">
         <Link to="/agendar" className="card hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue">

@@ -9,30 +9,27 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('smartru_user')
-    const token = localStorage.getItem('smartru_token')
-    if (stored && token) {
-      try { setUser(JSON.parse(stored)) } catch { /* ignora */ }
+    if (stored) {
+      try { setUser(JSON.parse(stored)) } catch { localStorage.removeItem('smartru_user') }
     }
     setLoading(false)
   }, [])
 
   const login = useCallback(async (cpf, password) => {
     const { data } = await authAPI.login({ cpf, password })
-    
-    console.log('resposta completa:', JSON.stringify(data))
 
     if (data.success) {
-      const [role, name, email, userCpf, enrollment, register_date] = data.data
-      
+      const [role, name, email, userCpf, enrollment, academic_unit] = data.data
+
       const user = {
         type: role,
         name,
         email,
         cpf: userCpf,
         enrollment,
+        academic_unit: academic_unit || 'sede', // fallback para compatibilidade
       }
 
-      localStorage.setItem('smartru_token', 'token-provisorio')
       localStorage.setItem('smartru_user', JSON.stringify(user))
       setUser(user)
       return user
@@ -46,8 +43,10 @@ export function AuthProvider({ children }) {
     return data
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('smartru_token')
+  const logout = useCallback(async () => {
+    try {
+      await authAPI.logout()
+    } catch { /* ignora erro de rede no logout */ }
     localStorage.removeItem('smartru_user')
     setUser(null)
   }, [])

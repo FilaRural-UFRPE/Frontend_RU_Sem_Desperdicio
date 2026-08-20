@@ -34,7 +34,7 @@ export function formatDateTime(isoStr) {
 }
 
 export function mealLabel(type) {
-  return type === 'almoco' ? '🍽️ Almoço' : '🌙 Jantar'
+  return type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar'
 }
 
 export function statusColor(status) {
@@ -53,22 +53,36 @@ export function userTypeLabel(type) {
 
 export function getErrorMessage(err) {
   const data = err?.response?.data
-  
+  const status = err?.response?.status
+
+  // Rate limit
+  if (status === 429) {
+    return data?.message || 'Muitas tentativas. Tente novamente mais tarde.'
+  }
+
+  // Formato padronizado do Iarley — preferir message
+  if (data?.message) return data.message
+
+  // Fallback para detail.msg
+  if (data?.detail?.msg) {
+    const msg = data.detail.msg
+    if (msg.includes('duplicate key')) return 'Já tens uma refeição agendada para esse dia e tipo!'
+    if (msg.includes('unique constraint')) return 'Já tens uma refeição agendada para esse dia e tipo!'
+    return msg
+  }
+
   if (typeof data === 'string') return data
-  
+
   if (data?.detail) {
     if (typeof data.detail === 'string') return data.detail
     if (Array.isArray(data.detail)) return data.detail.map(d => d.msg).join(', ')
-    if (data.detail?.msg) {
-      const msg = data.detail.msg
-      // Mensagens amigáveis para erros conhecidos
-      if (msg.includes('duplicate key')) return 'Já tens uma refeição agendada para esse dia e tipo!'
-      if (msg.includes('unique constraint')) return 'Já tens uma refeição agendada para esse dia e tipo!'
-      return msg
-    }
   }
-  
+
+  // Erros de validação 422
+  if (status === 422 && data?.details) {
+    return data.details.map(d => d.msg || d.message).join(', ')
+  }
+
   if (data?.msg) return data.msg
-  if (data?.message) return data.message
   return err?.message || 'Ocorreu um erro inesperado.'
 }
