@@ -35,7 +35,8 @@ api.interceptors.response.use(
     }
 
     // 401 = sessão expirada → tenta refresh uma única vez
-    if (status === 401 && !originalRequest._retry) {
+    // Ignora 401 no login (credenciais inválidas não devem tentar refresh)
+    if (status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/user/login')) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })

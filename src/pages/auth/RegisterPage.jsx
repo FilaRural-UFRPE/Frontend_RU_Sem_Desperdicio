@@ -37,6 +37,7 @@ export default function RegisterPage() {
     const e = {}
     if (!form.name.trim()) e.name = 'Nome obrigatório'
     if (!form.email.includes('@')) e.email = 'Email inválido'
+    else if (type === 'estudante' && !form.email.endsWith('@ufrpe.br')) e.email = 'Use email institucional (@ufrpe.br)'
     if (form.cpf.replace(/\D/g, '').length !== 11) e.cpf = 'CPF deve ter 11 dígitos'
     if (form.password.length < 8) e.password = 'Mínimo 8 caracteres'
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Senhas não coincidem'
