@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -19,6 +19,19 @@ const ACADEMIC_UNITS = [
   { value: 'uast', label: 'UAST (Serra Talhada)' },
 ]
 
+function passwordStrength(pw) {
+  if (!pw) return { level: 0, label: '', color: '' }
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+  if (score <= 2) return { level: 1, label: 'Fraca', color: 'bg-red-500' }
+  if (score <= 3) return { level: 2, label: 'Média', color: 'bg-amber-500' }
+  return { level: 3, label: 'Forte', color: 'bg-emerald-500' }
+}
+
 export default function RegisterPage() {
   const [type, setType] = useState('estudante')
   const [form, setForm] = useState({
@@ -27,11 +40,20 @@ export default function RegisterPage() {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [emailHint, setEmailHint] = useState('')
   const { register } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+
+  useEffect(() => {
+    if (type !== 'estudante') { setEmailHint(''); return }
+    const v = form.email.trim()
+    if (!v) { setEmailHint(''); return }
+    if (v.includes('@') && !v.endsWith('@ufrpe.br')) setEmailHint('Use email institucional @ufrpe.br')
+    else setEmailHint('')
+  }, [form.email, type])
 
   const validate = () => {
     const e = {}
@@ -102,9 +124,16 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <FormInput label="Nome completo" icon={User} placeholder="Seu nome" value={form.name} onChange={set('name')} error={errors.name} />
-            <FormInput label="Email" icon={Mail} type="email"
-              placeholder={type === 'convidado' ? 'seu@email.com' : 'seu@ufrpe.br'}
-              value={form.email} onChange={set('email')} error={errors.email} />
+            <div>
+              <FormInput label="Email" icon={Mail} type="email"
+                placeholder={type === 'convidado' ? 'seu@email.com' : 'seu@ufrpe.br'}
+                value={form.email} onChange={set('email')} error={errors.email} />
+              {emailHint && !errors.email && (
+                <p className="text-xs text-amber-600 font-body mt-1 flex items-center gap-1">
+                  <span>⚠️</span> {emailHint}
+                </p>
+              )}
+            </div>
             <FormInput label="CPF" icon={CreditCard} placeholder="000.000.000-00"
               value={form.cpf}
               onChange={(e) => setForm((f) => ({ ...f, cpf: maskCPF(e.target.value) }))}
@@ -140,8 +169,25 @@ export default function RegisterPage() {
                 value={form.enrollment} onChange={set('enrollment')} error={errors.enrollment} />
             )}
 
-            <FormInput label="Senha" icon={Lock} type="password" placeholder="Mínimo 8 caracteres"
-              value={form.password} onChange={set('password')} error={errors.password} />
+            <div>
+              <FormInput label="Senha" icon={Lock} type="password" placeholder="Mínimo 8 caracteres"
+                value={form.password} onChange={set('password')} error={errors.password} />
+              {form.password && (() => {
+                const s = passwordStrength(form.password)
+                return (
+                  <div className="mt-2">
+                    <div className="flex gap-1 mb-1">
+                      {[1,2,3].map(i => (
+                        <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= s.level ? s.color : 'bg-gray-200'}`} />
+                      ))}
+                    </div>
+                    <p className="text-xs font-body" style={{color: s.level === 1 ? '#ef4444' : s.level === 2 ? '#d97706' : '#059669'}}>
+                      Força: {s.label}
+                    </p>
+                  </div>
+                )
+              })()}
+            </div>
             <FormInput label="Confirmar senha" icon={Lock} type="password" placeholder="Repita a senha"
               value={form.confirmPassword} onChange={set('confirmPassword')} error={errors.confirmPassword} />
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -14,9 +14,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [shake, setShake] = useState(false)
   const { login } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (errors.form) {
+      setShake(true)
+      const t = setTimeout(() => setShake(false), 500)
+      return () => clearTimeout(t)
+    }
+  }, [errors.form])
 
   const validate = () => {
     const e = {}
@@ -110,8 +119,8 @@ export default function LoginPage() {
                 error={errors.password}
               />
               {/* 👈 Link de recuperação de senha */}
-              <div className="text-right mt-1">
-                <Link to="/recuperar-senha" className="text-xs text-ru-blue font-body hover:underline">
+              <div className="text-right mt-2">
+                <Link to="/recuperar-senha" className="text-sm text-ru-blue font-body font-medium hover:underline py-2 px-1 inline-block">
                   Esqueceste a senha?
                 </Link>
               </div>
@@ -119,9 +128,11 @@ export default function LoginPage() {
 
             {/* Mensagem de erro geral */}
             {errors.form && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
-                <span className="text-red-500 text-sm">⚠️</span>
-                <p className="text-red-600 text-sm font-body">{errors.form}</p>
+              <div className={`bg-red-50 border-2 border-red-300 rounded-xl px-4 py-3 flex items-center gap-3 ${shake ? 'animate-shake' : ''}`}>
+                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-red-600 text-sm font-bold">!</span>
+                </div>
+                <p className="text-red-700 text-sm font-body font-medium">{errors.form}</p>
               </div>
             )}
 

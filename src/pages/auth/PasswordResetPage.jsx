@@ -8,6 +8,19 @@ import Spinner from '../../components/ui/Spinner'
 import Logo from '../../components/ui/Logo'
 import { Lock } from 'lucide-react'
 
+function passwordStrength(pw) {
+  if (!pw) return { level: 0, label: '', color: '' }
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+  if (score <= 2) return { level: 1, label: 'Fraca', color: 'bg-red-500' }
+  if (score <= 3) return { level: 2, label: 'Média', color: 'bg-amber-500' }
+  return { level: 3, label: 'Forte', color: 'bg-emerald-500' }
+}
+
 export default function PasswordResetPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
@@ -45,6 +58,8 @@ export default function PasswordResetPage() {
     }
   }
 
+  const strength = passwordStrength(newPassword)
+
   return (
     <div className="min-h-screen bg-ru-cream flex items-center justify-center p-6">
       <div className="w-full max-w-md">
@@ -65,15 +80,29 @@ export default function PasswordResetPage() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <FormInput
-              label="Nova senha"
-              icon={Lock}
-              type="password"
-              placeholder="Mínimo 8 caracteres"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              error={errors.newPassword}
-            />
+            <div>
+              <FormInput
+                label="Nova senha"
+                icon={Lock}
+                type="password"
+                placeholder="Mínimo 8 caracteres"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                error={errors.newPassword}
+              />
+              {newPassword && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    {[1,2,3].map(i => (
+                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= strength.level ? strength.color : 'bg-gray-200'}`} />
+                    ))}
+                  </div>
+                  <p className="text-xs font-body" style={{color: strength.level === 1 ? '#ef4444' : strength.level === 2 ? '#d97706' : '#059669'}}>
+                    Força: {strength.label}
+                  </p>
+                </div>
+              )}
+            </div>
             <FormInput
               label="Confirmar nova senha"
               icon={Lock}
