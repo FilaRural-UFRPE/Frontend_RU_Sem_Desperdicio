@@ -4,6 +4,7 @@ import Logo from '../ui/Logo'
 import {
   LayoutDashboard, Calendar, History, User, LogOut,
   BarChart3, ClipboardList, Menu, Lock, UtensilsCrossed, UploadCloud,
+  Gift, ScanLine,
 } from 'lucide-react'
 import { useState } from 'react'
 import { userTypeLabel } from '../../utils/helpers'
@@ -13,6 +14,7 @@ const studentLinks = [
   { to: '/agendar', icon: Calendar, label: 'Agendar' },
   { to: '/historico', icon: History, label: 'Histórico' },
   { to: '/cardapio', icon: UtensilsCrossed, label: 'Cardápio da Semana' },
+  { to: '/voucher', icon: Gift, label: 'Meu voucher' },
   { to: '/perfil', icon: User, label: 'Perfil' },
   { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]
@@ -21,6 +23,7 @@ const staffLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral' },
   { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
   { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
+  { to: '/voucher/validar', icon: ScanLine, label: 'Validar voucher' },
   { to: '/cardapio-upload', icon: UploadCloud, label: 'Publicar Cardápio' }, // ✅ adicionado
   { to: '/perfil', icon: User, label: 'Perfil' },
   { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
