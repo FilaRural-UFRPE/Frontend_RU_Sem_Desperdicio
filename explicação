@@ -1,0 +1,449 @@
+SmartRU — Frontend do sistema de combate ao desperdício no Restaurante Universitário
+
+Este projeto é o frontend web do sistema SmartRU, uma aplicação React + Vite que serve estudantes e funcionários do RU (Restaurante Universitário). A finalidade principal é facilitar o agendamento de refeições, mostrar a situação da fila, permitir o acompanhamento do cardápio e gerar relatórios/insights para a gestão do restaurante.
+
+Em outras palavras, o app funciona como a camada de interface do sistema: ele conversa com o backend, valida a sessão do usuário, controla acesso por perfil e apresenta dados em dashboards, formulários e telas de gestão.
+
+------------------------------------------------------------
+1. Visão geral do projeto
+------------------------------------------------------------
+
+O projeto é uma aplicação SPA (Single Page Application) em React, com rotas controladas pelo react-router-dom. Ele possui dois perfis principais:
+
+- Estudante: agenda refeições, acessa histórico, visualiza cardápio e perfil
+- Funcionário: acesso ao dashboard operacional, relatórios, listagem de agendamentos e upload do cardápio
+
+A aplicação também integra com serviços externos, como:
+
+- Backend principal da API do sistema
+- Firebase Analytics
+- Serviço de visão computacional para status da fila
+- Serviço de IA para previsões e insights de demanda
+
+------------------------------------------------------------
+2. Stack tecnológica
+------------------------------------------------------------
+
+O frontend usa:
+
+- React 18
+- Vite como bundler e servidor de desenvolvimento
+- React Router DOM para navegação
+- Tailwind CSS para estilização
+- Axios para requisições HTTP
+- Firebase para analytics
+- Recharts para gráficos
+- date-fns para manipulação de datas
+- lucide-react para ícones
+
+A estrutura foi montada para facilitar manutenção e separação de responsabilidades.
+
+------------------------------------------------------------
+3. Arquitetura geral
+------------------------------------------------------------
+
+A arquitetura do projeto é organizada em camadas bem definidas:
+
+1. Entrada da aplicação
+   - src/main.jsx
+   - Cria a árvore React e renderiza o componente principal App
+
+2. Estrutura de rotas e providers
+   - src/App.jsx
+   - Define todas as rotas da aplicação
+   - Envolve a aplicação em AuthProvider e ToastProvider
+
+3. Contextos globais
+   - src/contexts/AuthContext.jsx
+   - Guarda o usuário autenticado e controla login/logout
+   - Também facilita o acesso ao estado global em qualquer tela
+
+   - src/contexts/ToastContext.jsx
+   - Permite mostrar mensagens de sucesso/erro/aviso no app
+
+4. Proteção de páginas
+   - src/components/ProtectedRoute.jsx
+   - Bloqueia acesso para usuários não autenticados
+   - Também pode restringir acesso por tipo de perfil
+
+5. Camada de serviços/API
+   - src/services/api.js
+   - Centraliza todas as chamadas à API backend
+   - Possui uma instância pronta do Axios, interceptadores e endpoints por módulo
+
+6. Páginas e componentes visuais
+   - src/pages/
+   - Onde ficam as telas da aplicação
+
+   - src/components/
+   - Componentes reutilizáveis e layout da app
+
+7. Utilitários e configurações gerais
+   - src/utils/helpers.js
+   - Funções auxiliares de conversão/validação
+
+   - src/firebase.js
+   - Inicializa o Firebase Analytics
+
+------------------------------------------------------------
+4. Estrutura de pastas e o que cada uma faz
+------------------------------------------------------------
+
+src/
+├── App.jsx
+│   Define todas as rotas da aplicação e os providers globais
+│
+├── main.jsx
+│   Ponto de entrada do React
+│
+├── firebase.js
+│   Inicializa o Firebase Analytics
+│
+├── index.css
+│   Estilos globais e classes do Tailwind
+│
+├── assets/
+│   Arquivos estáticos como imagens e logos
+│
+├── components/
+│   ├── ProtectedRoute.jsx
+│   │   Guarda de rota para autenticação e permissões
+│   │
+│   ├── layout/
+│   │   └── AppLayout.jsx
+│   │       Layout principal com navegação da app
+│   │
+│   ├── shared/
+│   │   └── LoadingScreen.jsx
+│   │       Tela de carregamento visual
+│   │
+│   └── ui/
+│       ├── FormInput.jsx
+│       ├── Logo.jsx
+│       ├── Modal.jsx
+│       ├── QueueStatusCard.jsx
+│       └── Spinner.jsx
+│       Componentes reutilizáveis da interface
+│
+├── contexts/
+│   ├── AuthContext.jsx
+│   │   Estado global do usuário autenticado
+│   │
+│   └── ToastContext.jsx
+│       Sistema de notificações para o usuário
+│
+├── pages/
+│   ├── DashboardRouter.jsx
+│   │   Decide se o usuário entra no dashboard de estudante ou funcionário
+│   │
+│   ├── NotFoundPage.jsx
+│   │   Página 404
+│   │
+│   ├── auth/
+│   │   LoginPage.jsx
+│   │   RegisterPage.jsx
+│   │   PasswordRecoverPage.jsx
+│   │   PasswordResetPage.jsx
+│   │   Telas de autenticação e recuperação
+│   │
+│   ├── student/
+│   │   DashboardPage.jsx
+│   │   SchedulePage.jsx
+│   │   HistoryPage.jsx
+│   │   MenuPage.jsx
+│   │   ProfilePage.jsx
+│   │   ChangePasswordPage.jsx
+│   │   Fluxo do estudante
+│   │
+│   └── staff/
+│       AllSchedulesPage.jsx
+│       ReportsPage.jsx
+│       MenuUploadPage.jsx
+│       StaffDashboard.jsx
+│       Fluxo do funcionário e da gestão do restaurante
+│
+├── services/
+│   └── api.js
+│       Centraliza os endpoints e interceptadores do backend
+│
+├── utils/
+│   └── helpers.js
+│       Validações, conversões e mensagens amigáveis de erro
+│
+public/
+│   Arquivos públicos e verificação do Google
+
+index.html
+vite.config.js
+postcss.config.js
+tailwind.config.js
+package.json
+README.md
+
+------------------------------------------------------------
+5. Fluxo da autenticação
+------------------------------------------------------------
+
+A autenticação é tratada na camada AuthContext.
+
+- Quando a aplicação abre, o sistema tenta ler o usuario salvo em localStorage
+- Se existir, ele reconstrói o estado do usuário para manter a sessão ativa
+- O login chama authAPI.login({ cpf, password })
+- Se der certo, o frontend salva os dados do usuário em localStorage e atualiza o context
+- O logout chama o endpoint do backend e limpa o estado local
+
+A estrutura principal do AuthContext é:
+
+- user: estado do usuário autenticado
+- loading: controla o carregamento inicial
+- login(): faz autenticação
+- register(): cadastra novo usuário
+- logout(): encerra sessão
+
+Além disso, a aplicação usa localStorage para guardar o usuário em um formato simples, como:
+
+- type
+- name
+- email
+- cpf
+- enrollment
+- academic_unit
+
+Essa persistência é útil para UI, mas a autenticação real da sessão continua sendo validada no backend via cookies HttpOnly.
+
+------------------------------------------------------------
+6. Proteção de rotas
+------------------------------------------------------------
+
+O componente ProtectedRoute decide se a página pode ser acessada.
+
+Regras:
+
+- Se o usuário ainda está carregando, mostra LoadingScreen
+- Se não houver usuário, redireciona para /login
+- Se a rota tiver allowedTypes, apenas usuários do tipo permitido podem entrar
+
+Exemplo:
+
+- /agendamentos => acessível somente para funcionário
+- /cardapio => acessível para qualquer usuário autenticado
+- /dashboard => redireciona para o dashboard do tipo correto
+
+Isso centraliza a regra de autorização de forma clara e segura.
+
+------------------------------------------------------------
+7. Sistema de rotas da aplicação
+------------------------------------------------------------
+
+O App.jsx define as rotas principais:
+
+Públicas:
+- /login
+- /cadastro
+- /recuperar-senha
+- /redefinir-senha
+
+Autenticadas:
+- /dashboard
+- /agendar
+- /historico
+- /perfil
+- /alterar-senha
+- /cardapio
+
+Restritas a funcionário:
+- /agendamentos
+- /relatorios
+- /cardapio-upload
+
+A rota raiz / redireciona para /login.
+
+Essa organização deixa o fluxo de navegação bem previsível e fácil de expandir.
+
+------------------------------------------------------------
+8. Camada de API e integrações com o backend
+------------------------------------------------------------
+
+O arquivo src/services/api.js é o núcleo da comunicação com a API.
+
+Ele cria uma instância do Axios com:
+
+- baseURL configurada por VITE_API_URL ou fallback para produção
+- withCredentials: true para enviar cookies HttpOnly
+
+Ele possui 5 grupos principais de endpoints:
+
+- authAPI: login, registro, logout, refresh
+- userAPI: dados do usuário, troca de senha, recuperação/reset, contagem
+- scheduleAPI: agendamentos, minhas refeições, agendamentos gerais
+- menuAPI: upload do cardápio e geração de imagem do cardápio
+- deviceAPI: registro de dispositivo
+- notificationAPI: lembretes e jobs de notificação
+- reportAPI: relatórios e exportação
+
+Além disso, o projeto implementa um interceptor de resposta:
+
+- 401: tenta refresh da sessão
+- 403: não tenta refresh, apenas rejeita
+- 429: não tenta refresh
+- Se o refresh falha, remove o usuário local e manda para /login
+
+Isso torna o sistema mais robusto e reduz a necessidade de repetir lógica de sessão em cada tela.
+
+------------------------------------------------------------
+9. Como a parte do estudante funciona
+------------------------------------------------------------
+
+A área do estudante é centrada no dashboard e nas telas de agendamento.
+
+Principal funções:
+
+- ver uma saudação personalizada
+- consultar a fila do RU
+- visualizar próximos agendamentos
+- acessar menu do restaurante
+- consultar histórico de refeições
+- alterar dados de perfil e senha
+
+No StudentDashboard, por exemplo, a aplicação:
+
+- lê o usuário autenticado do AuthContext
+- busca os próximos agendamentos com scheduleAPI.mySchedules()
+- exibe os próximos itens em cards
+- mostra status da fila do RU via fetch diretamente para a API de visão computacional
+
+A ideia é simplificar o dia a dia do estudante, mostrando ao mesmo tempo informações práticas e status do restaurante.
+
+------------------------------------------------------------
+10. Como a parte do funcionário funciona
+------------------------------------------------------------
+
+A área administrativa usa o StaffDashboard como painel central.
+
+Essa tela reúne:
+
+- demanda de refeições por dia
+- métricas de agendamentos
+- exportação de relatórios em CSV
+- previsões de demanda usando IA
+- estatísticas de no-show
+- padrões semanais
+- insights do cardápio
+- quantidade de usuários cadastrados
+
+A dashboard do funcionário faz múltiplas buscas em paralelo:
+
+- scheduleAPI.allSchedules(brDate)
+- reportAPI.demand(brDate)
+- APIs externas da IA para previsão e padrões
+- userAPI.count() para total de usuários
+
+Ela usa o Recharts para construir gráficos e mostrar visualmente o comportamento do RU.
+
+Isso mostra que o frontend não é apenas CRUD; ele também atua como camada de analytics e tomada de decisão operacional.
+
+------------------------------------------------------------
+11. Integração com IA e visão computacional
+------------------------------------------------------------
+
+O projeto se conecta a serviços externos de inteligência artificial:
+
+- FilaRural (visão computacional)
+  - URL: https://filarural-visao-computacional-1.onrender.com/queue/status
+  - retorna o status da fila e tempo estimado de espera
+
+- Serviço de IA do desperdício
+  - URL base: https://desperdicio-ia.onrender.com
+  - expõe endpoints como:
+    - /api/demand/forecast
+    - /api/noshow/summary
+    - /api/patterns/weekly
+    - /api/demand/menu-insights
+
+Essa parte mostra que o frontend funciona como a interface do sistema inteligente do RU, transformando dados acadêmicos e operacionais em dashboards e sinais úteis para gestão.
+
+------------------------------------------------------------
+12. Firebase
+------------------------------------------------------------
+
+O projeto também inicializa o Firebase, mas apenas para analytics.
+
+Arquivo: src/firebase.js
+
+O objetivo é coletar dados de uso e comportamento da aplicação, como: acessos, eventos e navegação. Isso é comum em frontend moderno para apoio à tomada de decisão e métricas de produto.
+
+------------------------------------------------------------
+13. Estilo e UI
+------------------------------------------------------------
+
+A interface usa Tailwind CSS com uma identidade visual própria, com classes customizadas como:
+
+- card
+- btn-primary
+- btn-secondary
+- input-field
+- text-ru-blue
+- bg-ru-cream
+
+A aplicação tem um visual mais institucional e voltado para um produto universitário/profissional, com foco em clareza, usabilidade e mobilidade.
+
+Os componentes visuais foram construídos para serem reutilizados, reduzindo duplicação e mantendo consistência visual.
+
+------------------------------------------------------------
+14. Fluxo de desenvolvimento e execução
+------------------------------------------------------------
+
+Para rodar localmente:
+
+1. Instalar dependências
+   npm install
+
+2. Opcionalmente criar um .env com a API do backend
+   VITE_API_URL=http://localhost:8000/api
+
+3. Rodar em desenvolvimento
+   npm run dev
+
+4. Build de produção
+   npm run build
+
+5. Preview da build
+   npm run preview
+
+O app usa Vite e roda normalmente em localhost:5173 em desenvolvimento, salvo configuração diferente.
+
+------------------------------------------------------------
+15. Relação com o backend e o restante do ecossistema
+------------------------------------------------------------
+
+Este repositório é apenas o frontend web do projeto completo.
+
+O backend principal do SmartRU e os serviços de IA ficam em repositórios separados. Isso é uma boa prática porque separa responsabilidades:
+
+- frontend: experiência do usuário
+- backend: regras de negócio e dados
+- IA: previsão e análise de demanda
+- visão computacional: identificação da fila
+
+A comunicação entre eles é feita por HTTP via API REST.
+
+------------------------------------------------------------
+16. Padrões importantes de arquitetura neste projeto
+------------------------------------------------------------
+
+Há alguns pontos-chave que definem a arquitetura do código:
+
+- Componentização: telas e recursos são separados em componentes reutilizáveis
+- Context API: gerenciamento de autenticação e notificação global
+- Rotas protegidas: centralização de acesso por perfil
+- Service layer: todas as chamadas HTTP ficam em um módulo único
+- Separação por perfil: estudante vs funcionário
+- Integração externa: UI conectando com backend e serviços de dados/IA
+
+Esse tipo de organização torna o app mais fácil de evoluir e manter.
+
+------------------------------------------------------------
+17. Resumo em uma frase
+------------------------------------------------------------
+
+Este projeto é um frontend React para um sistema acadêmico de gestão do RU, com autenticação, agendamento de refeições, painel analítico, integração com backend, serviços de IA e monitoramento da fila, tudo organizado em rotas, contextos, serviços e páginas por perfil de usuário.
