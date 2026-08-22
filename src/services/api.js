@@ -119,6 +119,15 @@ export const notificationAPI = {
   getJob: (jobId) => api.get(`/notification/jobs/${jobId}`),
 }
 
+// ─── Vouchers ─────────────────────────────────────────
+export const voucherAPI = {
+  mine: () => api.get('/voucher/my'),
+  generate: () => api.post('/voucher/generate'),
+  publicKey: () => api.get('/voucher/public-key'),
+  validate: (data) => api.post('/voucher/validate', data),
+  sync: (usages) => api.post('/voucher/sync', { usages }),
+}
+
 // ─── Relatórios ───────────────────────────────────────
 function toBRDate(dateStr) {
   if (!dateStr) return ''
