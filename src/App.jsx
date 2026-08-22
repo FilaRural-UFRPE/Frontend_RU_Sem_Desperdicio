@@ -17,11 +17,13 @@ import HistoryPage from './pages/student/HistoryPage'
 import ProfilePage from './pages/student/ProfilePage'
 import ChangePasswordPage from './pages/student/ChangePasswordPage'
 import MenuPage from './pages/student/MenuPage'
+import VoucherPage from './pages/student/VoucherPage'
 
 // Páginas exclusivas do funcionário
 import AllSchedulesPage from './pages/staff/AllSchedulesPage'
 import ReportsPage from './pages/staff/ReportsPage'
 import MenuUploadPage from './pages/staff/MenuUploadPage' // ✅ adicionado
+import VoucherValidatePage from './pages/staff/VoucherValidatePage'
 
 // Utilitários
 import NotFoundPage from './pages/NotFoundPage'
@@ -91,6 +93,14 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/voucher"
+              element={
+                <ProtectedRoute allowedTypes={['estudante', 'convidado']}>
+                  <AppLayout><VoucherPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
 
             {/* Exclusivo funcionário */}
             <Route
@@ -115,6 +125,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedTypes={['funcionario']}>
                   <AppLayout><MenuUploadPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/voucher/validar"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><VoucherValidatePage /></AppLayout>
                 </ProtectedRoute>
               }
             />
