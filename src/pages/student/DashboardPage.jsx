@@ -4,7 +4,12 @@ import { useAuth } from '../../contexts/AuthContext'
 import { scheduleAPI } from '../../services/api'
 import { Calendar, History, User, Clock, CheckCircle, Utensils } from 'lucide-react'
 
-const QUEUE_API_URL = 'https://filarural-visao-computacional-1.onrender.com/queue/status'
+// Prioriza o filarural-backend (colaborativo + visao com fallback).
+// Enquanto o backend nao estiver no ar, cai direto na visao computacional.
+const QUEUE_API_URL =
+  import.meta.env.VITE_QUEUE_API_URL ||
+  import.meta.env.VITE_VISION_API_URL ||
+  'https://filarural-visao-computacional-1.onrender.com/queue/status'
 
 // Mapeia o status textual da API para cor e rótulo amigável.
 // Propositalmente NÃO exibimos o número de pessoas na fila — só o nível.
@@ -15,6 +20,37 @@ const QUEUE_STATUS_MAP = {
   grande: { label: 'Fila grande',  color: 'text-red-700',    bg: 'bg-red-50',    dot: 'bg-red-500' },
 }
 
+// Normaliza a resposta, aceitando tanto o formato da visao computacional
+// (status, waiting_time_minutes, available, is_stale, age_minutes)
+// quanto o formato do filarural-backend (queue_state, estimated_wait_minutes,
+// origin, updated_at) — assim o componente funciona nos dois sem trocar codigo.
+function normalizeQueueData(data) {
+  if (!data) return null
+
+  const status = data.queue_state ?? data.status
+  const waitingTimeMinutes = data.estimated_wait_minutes ?? data.waiting_time_minutes ?? 0
+
+  const available =
+    typeof data.available === 'boolean'
+      ? data.available
+      : Boolean(data.origin) && data.origin !== 'indisponivel'
+
+  let ageMinutes = typeof data.age_minutes === 'number' ? data.age_minutes : null
+  if (ageMinutes === null && data.updated_at) {
+    const updated = new Date(data.updated_at).getTime()
+    if (!Number.isNaN(updated)) {
+      ageMinutes = (Date.now() - updated) / 60000
+    }
+  }
+
+  const isStale =
+    typeof data.is_stale === 'boolean'
+      ? data.is_stale
+      : ageMinutes !== null && ageMinutes > 10
+
+  return { status, waiting_time_minutes: waitingTimeMinutes, available, is_stale: isStale, age_minutes: ageMinutes }
+}
+
 function QueueStatusCard() {
   const [queue, setQueue] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -23,7 +59,7 @@ function QueueStatusCard() {
     const fetchQueue = () => {
       fetch(QUEUE_API_URL)
         .then((res) => res.json())
-        .then((data) => setQueue(data))
+        .then((data) => setQueue(normalizeQueueData(data)))
         .catch(() => setQueue(null))
         .finally(() => setLoading(false))
     }
@@ -65,7 +101,7 @@ function QueueStatusCard() {
             ~{queue.waiting_time_minutes} min de espera estimada
           </p>
         </div>
-        {queue.is_stale && (
+        {queue.is_stale && queue.age_minutes !== null && (
           <span className="text-[10px] text-ru-muted font-body">atualizado há {Math.round(queue.age_minutes)} min</span>
         )}
       </div>
