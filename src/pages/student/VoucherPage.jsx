@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
-import { Download, Gift, Printer, ShieldCheck, Sparkles, UtensilsCrossed } from 'lucide-react'
-import { voucherAPI, campaignAPI } from '../../services/api'
+import { Download, Gift, Printer, ShieldCheck, Sparkles } from 'lucide-react'
+import { voucherAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { formatLocalDate } from '../../utils/helpers'
@@ -14,23 +14,11 @@ export default function VoucherPage() {
   const regularQrRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState({ wins: 0, available_prizes: 0, vouchers: [] })
-  const [eventVoucher, setEventVoucher] = useState(null)
 
   const load = async () => {
     try {
-      const [regular, event] = await Promise.allSettled([
-        voucherAPI.mine(),
-        campaignAPI.myVoucher(),
-      ])
-      if (regular.status === 'fulfilled') setData(regular.value.data.data)
-      if (event.status === 'fulfilled') setEventVoucher(event.value.data?.data ?? null)
-      if (regular.status === 'rejected' && event.status === 'rejected') {
-        throw regular.reason
-      }
-      if (regular.status === 'rejected')
-        toast('Não foi possível carregar o voucher mensal', 'error')
-      if (event.status === 'rejected')
-        toast('Não foi possível carregar o voucher de evento', 'warning')
+      const regular = await voucherAPI.mine()
+      setData(regular.data.data)
     } catch (error) {
       toast(error.response?.data?.detail || 'Não foi possível carregar seus vouchers', 'error')
     } finally {
@@ -154,73 +142,6 @@ export default function VoucherPage() {
           </button>
         </div>
       )}
-
-      <section className="pt-4">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue flex items-center gap-2">
-          <UtensilsCrossed size={14} /> Campanha RU Sem Desperdício
-        </p>
-        <h2 className="font-display text-2xl font-bold text-ru-charcoal mt-1">Voucher de evento</h2>
-        {eventVoucher ? (
-          <div className="voucher-ticket bg-ru-blue-dark text-white rounded-3xl overflow-hidden shadow-xl grid md:grid-cols-[1fr_auto] mt-4">
-            <div className="p-7 md:p-8 flex flex-col justify-between">
-              <div>
-                <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-100">
-                  <ShieldCheck size={16} /> QR code de evento
-                </span>
-                <h3 className="font-display text-2xl font-bold mt-4">5 almoços no RU.</h3>
-                <p className="text-blue-100 mt-2 max-w-md text-sm">
-                  Você foi premiado na roleta da campanha. Apresente este QR no caixa a cada almoço.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-white/20 flex flex-wrap gap-x-8 gap-y-3 text-sm">
-                <div>
-                  <p className="text-blue-200 text-xs uppercase tracking-wide">Titular</p>
-                  <p className="font-semibold mt-1">{user?.name}</p>
-                </div>
-                <div>
-                  <p className="text-blue-200 text-xs uppercase tracking-wide">Código</p>
-                  <p className="font-mono font-semibold mt-1">{eventVoucher.code}</p>
-                </div>
-                <div>
-                  <p className="text-blue-200 text-xs uppercase tracking-wide">Refeições</p>
-                  <p className="font-semibold mt-1">
-                    {eventVoucher.meals_used} / {eventVoucher.total_meals}
-                  </p>
-                </div>
-              </div>
-              {eventVoucher.usages?.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-white/20">
-                  <p className="text-blue-200 text-xs uppercase tracking-wide mb-2">Histórico</p>
-                  <div className="flex flex-wrap gap-2">
-                    {eventVoucher.usages.map((u) => (
-                      <span
-                        key={u.id}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs"
-                      >
-                        <UtensilsCrossed size={12} /> {formatDate(u.meal_date)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="bg-white p-7 flex flex-col items-center justify-center text-ru-charcoal relative voucher-stub">
-              <QRCodeCanvas value={eventVoucher.qr_data} size={200} level="M" marginSize={1} />
-              <p className="font-mono text-[10px] tracking-widest uppercase mt-3 text-ru-muted">
-                SmartRU · evento
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="card text-center py-10 mt-4">
-            <Gift className="mx-auto text-ru-muted" size={28} />
-            <h3 className="font-display font-semibold text-lg mt-3">Nenhum voucher de evento</h3>
-            <p className="text-ru-muted text-sm mt-1">
-              Complete 10 dias de agendamento e presença para concorrer na roleta da campanha.
-            </p>
-          </div>
-        )}
-      </section>
     </div>
   )
 }

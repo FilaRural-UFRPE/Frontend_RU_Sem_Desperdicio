@@ -186,32 +186,4 @@ export const rankingAPI = {
   raffleWinners: (raffleId) => api.get(`/ranking/raffle/${raffleId}/winners`),
 }
 
-// ─── Campanha / Roleta ───────────────────────────────
-export const campaignAPI = {
-  list: () => api.get('/campaign'),
-  get: (id) => api.get(`/campaign/${id}`),
-  create: (data) => api.post('/campaign', data),
-  computeStats: (id) => api.post(`/campaign/${id}/compute-stats`),
-  participants: (id, onlyEligible = false) =>
-    api.get(`/campaign/${id}/participants`, { params: { only_eligible: onlyEligible } }),
-  spin: (id) => api.post(`/campaign/${id}/spin`),
-  confirmSpin: (spinId) => api.post(`/campaign/spin/${spinId}/confirm`),
-  cancelSpin: (spinId) => api.post(`/campaign/spin/${spinId}/cancel`),
-  registerVoucher: (spinId, userCpf) =>
-    api.post(`/campaign/spin/${spinId}/voucher`, { user_cpf: userCpf }),
-  getVoucher: (voucherId) => api.get(`/campaign/voucher/${voucherId}`),
-  useVoucher: (voucherId, nonce, signatureHex, mealType = 'lunch') =>
-    api.post(
-      `/campaign/voucher/${voucherId}/use`,
-      buildEventVoucherUsePayload(nonce, signatureHex, mealType)
-    ),
-  listVouchers: (campaignId = null) =>
-    api.get('/campaign/vouchers', { params: campaignId ? { campaign_id: campaignId } : {} }),
-  myVoucher: () => api.get('/campaign/my-voucher'),
-}
-
-export function buildEventVoucherUsePayload(nonce, signatureHex, mealType = 'lunch') {
-  return { meal_type: mealType, nonce, signature_hex: signatureHex }
-}
-
 export default api
