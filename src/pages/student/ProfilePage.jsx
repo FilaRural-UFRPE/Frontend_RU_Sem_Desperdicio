@@ -81,7 +81,11 @@ export default function ProfilePage() {
         <Field icon={User} label="Nome completo" value={user?.name} />
         <Field icon={Mail} label="Email" value={user?.email} />
         <Field icon={CreditCard} label="CPF" value={cpfFormatted} />
-        <Field icon={MapPin} label="Unidade Acadêmica" value={ACADEMIC_UNIT_LABELS[user?.academic_unit] || user?.academic_unit} />
+        <Field
+          icon={MapPin}
+          label="Unidade Acadêmica"
+          value={ACADEMIC_UNIT_LABELS[user?.academic_unit] || user?.academic_unit}
+        />
         {user?.type === 'estudante' && (
           <Field icon={GraduationCap} label="Matrícula" value={user?.enrollment} />
         )}
@@ -106,8 +110,14 @@ export default function ProfilePage() {
           Esta ação é permanente e não pode ser desfeita.
         </p>
         <div className="flex gap-3">
-          <button onClick={() => setDeleteModal(false)} className="btn-secondary flex-1">Cancelar</button>
-          <button onClick={handleDelete} disabled={loading} className="btn-danger flex-1 flex items-center justify-center gap-2">
+          <button onClick={() => setDeleteModal(false)} className="btn-secondary flex-1">
+            Cancelar
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="btn-danger flex-1 flex items-center justify-center gap-2"
+          >
             {loading ? <Spinner size={16} /> : 'Excluir'}
           </button>
         </div>

@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react'
 import { Users, Clock, AlertCircle, Wifi } from 'lucide-react'
 import Spinner from './Spinner'
 
-const VISION_API_URL = import.meta.env.VITE_VISION_API_URL || 'https://filarural-visao-computacional-1.onrender.com'
+const VISION_API_URL =
+  import.meta.env.VITE_VISION_API_URL || 'https://filarural-visao-computacional-1.onrender.com'
 
 const STATUS_CONFIG = {
-  vazia:   { label: 'Vazia',   color: 'text-emerald-600', bg: 'bg-emerald-50', emoji: '🟢' },
+  vazia: { label: 'Vazia', color: 'text-emerald-600', bg: 'bg-emerald-50', emoji: '🟢' },
   pequena: { label: 'Pequena', color: 'text-emerald-600', bg: 'bg-emerald-50', emoji: '🟢' },
-  média:   { label: 'Média',   color: 'text-amber-600',   bg: 'bg-amber-50',   emoji: '🟡' },
-  grande:  { label: 'Grande',  color: 'text-red-600',     bg: 'bg-red-50',     emoji: '🔴' },
+  média: { label: 'Média', color: 'text-amber-600', bg: 'bg-amber-50', emoji: '🟡' },
+  grande: { label: 'Grande', color: 'text-red-600', bg: 'bg-red-50', emoji: '🔴' },
 }
 
 export default function QueueStatusCard() {
@@ -49,9 +50,7 @@ export default function QueueStatusCard() {
           <Users size={16} className="text-ru-muted" />
           <p className="font-display font-semibold text-ru-charcoal text-sm">Fila do RU</p>
         </div>
-        <p className="text-xs text-ru-muted font-body">
-          Estado da fila ainda não disponível.
-        </p>
+        <p className="text-xs text-ru-muted font-body">Estado da fila ainda não disponível.</p>
       </div>
     )
   }
@@ -66,7 +65,10 @@ export default function QueueStatusCard() {
           <p className="font-display font-semibold text-ru-charcoal text-sm">Fila do RU agora</p>
         </div>
         {queue.is_stale && (
-          <div className="flex items-center gap-1 text-amber-600" title="Dados podem estar desatualizados">
+          <div
+            className="flex items-center gap-1 text-amber-600"
+            title="Dados podem estar desatualizados"
+          >
             <AlertCircle size={12} />
           </div>
         )}

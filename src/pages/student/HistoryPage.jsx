@@ -1,20 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { scheduleAPI } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { getErrorMessage } from '../../utils/helpers'
+import { getErrorMessage, MEAL_TYPE_LABELS, localISODate } from '../../utils/helpers'
 import Modal from '../../components/ui/Modal'
 import Spinner from '../../components/ui/Spinner'
 import { RefreshCw, X } from 'lucide-react'
 
-const today = new Date().toISOString().split('T')[0]
-
-const MEAL_TYPE_LABELS = {
-  select: '👑 Select',
-  leve_sabor: '🥗 Leve Sabor',
-  essencial: '🍱 Essencial',
-  vegetariano: '🌿 Vegetariano',
-}
+const today = localISODate()
 
 const MEAL_TYPES = [
   { value: 'select', emoji: '👑', label: 'Select' },
@@ -35,9 +28,10 @@ export default function HistoryPage() {
   const { toast } = useToast()
   const { user } = useAuth()
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true)
-    scheduleAPI.mySchedules()
+    scheduleAPI
+      .mySchedules()
       .then(({ data }) => {
         const raw = data?.data || []
         const parsed = raw.map((s) => ({
@@ -52,9 +46,9 @@ export default function HistoryPage() {
       })
       .catch(() => toast('Erro ao carregar agendamentos', 'error'))
       .finally(() => setLoading(false))
-  }
+  }, [toast])
 
-  useEffect(load, [])
+  useEffect(load, [load])
 
   const toBackendDate = (dateStr) => {
     const clean = dateStr?.split('T')[0]
@@ -81,9 +75,18 @@ export default function HistoryPage() {
   }
 
   const handleReschedule = async () => {
-    if (!newDate) { toast('Escolha uma nova data', 'warning'); return }
-    if (!newTime) { toast('Escolha um novo horário', 'warning'); return }
-    if (!newMealOption) { toast('Escolha o tipo de refeição', 'warning'); return }
+    if (!newDate) {
+      toast('Escolha uma nova data', 'warning')
+      return
+    }
+    if (!newTime) {
+      toast('Escolha um novo horário', 'warning')
+      return
+    }
+    if (!newMealOption) {
+      toast('Escolha o tipo de refeição', 'warning')
+      return
+    }
     setActionLoading(true)
     try {
       await scheduleAPI.update({
@@ -107,7 +110,7 @@ export default function HistoryPage() {
     }
   }
 
-  const mealLabel = (type) => type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar'
+  const mealLabel = (type) => (type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar')
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -153,7 +156,12 @@ export default function HistoryPage() {
 
               <div className="flex gap-2 flex-shrink-0">
                 <button
-                  onClick={() => { setRescheduleModal(s); setNewDate(''); setNewTime(''); setNewMealOption(s.meal_option || '') }}
+                  onClick={() => {
+                    setRescheduleModal(s)
+                    setNewDate('')
+                    setNewTime('')
+                    setNewMealOption(s.meal_option || '')
+                  }}
                   className="p-2 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors"
                   title="Reagendar"
                 >
@@ -180,15 +188,25 @@ export default function HistoryPage() {
           <strong>{cancelModal?.schedule_date?.split('T')[0]}</strong>?
         </p>
         <div className="flex gap-3">
-          <button onClick={() => setCancelModal(null)} className="btn-secondary flex-1">Voltar</button>
-          <button onClick={handleCancel} disabled={actionLoading} className="btn-danger flex-1 flex items-center justify-center gap-2">
+          <button onClick={() => setCancelModal(null)} className="btn-secondary flex-1">
+            Voltar
+          </button>
+          <button
+            onClick={handleCancel}
+            disabled={actionLoading}
+            className="btn-danger flex-1 flex items-center justify-center gap-2"
+          >
             {actionLoading ? <Spinner size={16} /> : 'Cancelar'}
           </button>
         </div>
       </Modal>
 
       {/* Modal reagendar */}
-      <Modal open={!!rescheduleModal} onClose={() => setRescheduleModal(null)} title="Reagendar refeição">
+      <Modal
+        open={!!rescheduleModal}
+        onClose={() => setRescheduleModal(null)}
+        title="Reagendar refeição"
+      >
         <p className="text-sm font-body text-ru-muted mb-4">
           Escolha nova data, horário e tipo para o{' '}
           <strong className="text-ru-charcoal">
@@ -197,15 +215,32 @@ export default function HistoryPage() {
         </p>
         <div className="flex flex-col gap-4 mb-6">
           <div>
-            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">Nova data</label>
-            <input type="date" value={newDate} min={today} onChange={(e) => setNewDate(e.target.value)} className="input-field" />
+            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">
+              Nova data
+            </label>
+            <input
+              type="date"
+              value={newDate}
+              min={today}
+              onChange={(e) => setNewDate(e.target.value)}
+              className="input-field"
+            />
           </div>
           <div>
-            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">Novo horário</label>
-            <input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} className="input-field" />
+            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">
+              Novo horário
+            </label>
+            <input
+              type="time"
+              value={newTime}
+              onChange={(e) => setNewTime(e.target.value)}
+              className="input-field"
+            />
           </div>
           <div>
-            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">Tipo de refeição</label>
+            <label className="text-sm font-body font-medium text-ru-charcoal block mb-2">
+              Tipo de refeição
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {MEAL_TYPES.map((m) => (
                 <button
@@ -226,8 +261,14 @@ export default function HistoryPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setRescheduleModal(null)} className="btn-secondary flex-1">Cancelar</button>
-          <button onClick={handleReschedule} disabled={actionLoading} className="btn-primary flex-1 flex items-center justify-center gap-2">
+          <button onClick={() => setRescheduleModal(null)} className="btn-secondary flex-1">
+            Cancelar
+          </button>
+          <button
+            onClick={handleReschedule}
+            disabled={actionLoading}
+            className="btn-primary flex-1 flex items-center justify-center gap-2"
+          >
             {actionLoading ? <Spinner size={16} /> : 'Confirmar'}
           </button>
         </div>

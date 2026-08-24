@@ -28,7 +28,8 @@ export default function MenuPage() {
     setLunchSrc(null)
     setDinnerSrc(null)
 
-    menuAPI.current()
+    menuAPI
+      .current()
       .then(({ data }) => {
         const menuData = data.data
         setMenu(menuData)
@@ -41,7 +42,8 @@ export default function MenuPage() {
 
         if (hasLunch) {
           promises.push(
-            menuAPI.image(menuData.id, 'lunch')
+            menuAPI
+              .image(menuData.id, 'lunch')
               .then((res) => setLunchSrc(URL.createObjectURL(res.data)))
               .catch(() => {})
           )
@@ -49,7 +51,8 @@ export default function MenuPage() {
 
         if (hasDinner) {
           promises.push(
-            menuAPI.image(menuData.id, 'dinner')
+            menuAPI
+              .image(menuData.id, 'dinner')
               .then((res) => setDinnerSrc(URL.createObjectURL(res.data)))
               .catch(() => {})
           )
@@ -67,7 +70,9 @@ export default function MenuPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   return (
     <div className="max-w-3xl mx-auto">

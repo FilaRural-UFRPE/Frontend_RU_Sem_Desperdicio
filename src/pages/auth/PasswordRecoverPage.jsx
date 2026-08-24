@@ -52,7 +52,9 @@ export default function PasswordRecoverPage() {
           <p className="text-ru-muted font-body text-sm mb-6">
             Verifica a tua caixa de entrada e segue as instruções para redefinir a senha.
           </p>
-          <Link to="/login" className="btn-primary inline-block">Voltar ao login</Link>
+          <Link to="/login" className="btn-primary inline-block">
+            Voltar ao login
+          </Link>
         </div>
       </div>
     )
@@ -91,14 +93,20 @@ export default function PasswordRecoverPage() {
               error={errors.email}
             />
 
-            <button type="submit" disabled={loading} className="btn-primary mt-2 flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary mt-2 flex items-center justify-center gap-2"
+            >
               {loading ? <Spinner size={18} /> : 'Enviar instruções'}
             </button>
           </form>
 
           <p className="text-center text-sm font-body text-ru-muted mt-5">
             Lembras da senha?{' '}
-            <Link to="/login" className="text-ru-blue font-medium hover:underline">Entrar</Link>
+            <Link to="/login" className="text-ru-blue font-medium hover:underline">
+              Entrar
+            </Link>
           </p>
         </div>
       </div>

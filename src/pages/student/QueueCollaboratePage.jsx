@@ -12,8 +12,9 @@ import bancosJangoPhoto from '../../assets/queue-points/bancos-jango.jpg'
 
 // Base da API do filarural-backend. Pode ser sobrescrita via VITE_FILARURAL_API_URL;
 // por padrao usa a mesma instancia ja hospedada em producao no Render.
-const FILARURAL_API_BASE =
-  (import.meta.env.VITE_FILARURAL_API_URL || 'https://filarural-backend.onrender.com/api').replace(/\/$/, '')
+const FILARURAL_API_BASE = (
+  import.meta.env.VITE_FILARURAL_API_URL || 'https://filarural-backend.onrender.com/api'
+).replace(/\/$/, '')
 
 // Precisa bater exatamente com a whitelist do backend (services/location.py -> PONTOS_METROS).
 const REFERENCE_POINTS = [
@@ -165,14 +166,15 @@ export default function QueueCollaboratePage() {
 
   return (
     <div className="max-w-md mx-auto">
-      <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-ru-muted font-body mb-4 hover:text-ru-charcoal">
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-1 text-sm text-ru-muted font-body mb-4 hover:text-ru-charcoal"
+      >
         <ArrowLeft size={14} />
         Voltar
       </Link>
 
-      <h1 className="font-display font-bold text-xl text-ru-charcoal mb-1">
-        Colaborar com a fila
-      </h1>
+      <h1 className="font-display font-bold text-xl text-ru-charcoal mb-1">Colaborar com a fila</h1>
       <p className="text-ru-muted font-body text-sm mb-6">
         Nos diga onde você está na fila agora e ajude outros estudantes a se planejarem.
       </p>
@@ -196,7 +198,10 @@ export default function QueueCollaboratePage() {
               <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
               {locationError}
             </p>
-            <button onClick={requestLocation} className="text-sm text-ru-blue font-body hover:underline">
+            <button
+              onClick={requestLocation}
+              className="text-sm text-ru-blue font-body hover:underline"
+            >
               Tentar novamente
             </button>
           </div>
@@ -228,7 +233,9 @@ export default function QueueCollaboratePage() {
               <div className="aspect-video w-full overflow-hidden bg-ru-cream">
                 <img src={point.photo} alt={point.label} className="w-full h-full object-cover" />
               </div>
-              <p className="text-sm font-body font-medium text-ru-charcoal px-3 py-2">{point.label}</p>
+              <p className="text-sm font-body font-medium text-ru-charcoal px-3 py-2">
+                {point.label}
+              </p>
             </button>
           ))}
         </div>

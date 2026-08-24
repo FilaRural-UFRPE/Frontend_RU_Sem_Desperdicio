@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { scheduleAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { getErrorMessage, formatDate } from '../../utils/helpers'
+import { getErrorMessage, formatDate, localISODate } from '../../utils/helpers'
 import Spinner from '../../components/ui/Spinner'
 import { CalendarCheck } from 'lucide-react'
 
-const today = new Date().toISOString().split('T')[0]
+const today = localISODate()
 
 const MEAL_TYPES = [
   { value: 'select', emoji: '👑', label: 'Select', sub: 'Refeição premium' },
@@ -28,10 +28,22 @@ export default function SchedulePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!mealType) { toast('Escolha almoço ou jantar', 'warning'); return }
-    if (!mealTypeChoice) { toast('Escolha o tipo de refeição', 'warning'); return }
-    if (!date) { toast('Escolha uma data', 'warning'); return }
-    if (!time) { toast('Escolha um horário', 'warning'); return }
+    if (!mealType) {
+      toast('Escolha almoço ou jantar', 'warning')
+      return
+    }
+    if (!mealTypeChoice) {
+      toast('Escolha o tipo de refeição', 'warning')
+      return
+    }
+    if (!date) {
+      toast('Escolha uma data', 'warning')
+      return
+    }
+    if (!time) {
+      toast('Escolha um horário', 'warning')
+      return
+    }
     setLoading(true)
     try {
       const [year, month, day] = date.split('-')
@@ -53,7 +65,7 @@ export default function SchedulePage() {
     }
   }
 
-  const mealTypeLabel = MEAL_TYPES.find(m => m.value === mealTypeChoice)?.label || ''
+  const mealTypeLabel = MEAL_TYPES.find((m) => m.value === mealTypeChoice)?.label || ''
 
   return (
     <div className="max-w-md mx-auto">
@@ -126,11 +138,7 @@ export default function SchedulePage() {
             onChange={(e) => setDate(e.target.value)}
             className="input-field"
           />
-          {date && (
-            <p className="text-xs text-ru-muted font-body mt-1.5">
-              📅 {formatDate(date)}
-            </p>
-          )}
+          {date && <p className="text-xs text-ru-muted font-body mt-1.5">📅 {formatDate(date)}</p>}
         </div>
 
         {/* Horário */}
@@ -156,15 +164,22 @@ export default function SchedulePage() {
           <div className="bg-ru-cream rounded-xl p-4 flex items-start gap-3">
             <CalendarCheck size={18} className="text-ru-blue mt-0.5" />
             <div>
-              <p className="text-sm font-body font-medium text-ru-charcoal">Confirmar agendamento</p>
+              <p className="text-sm font-body font-medium text-ru-charcoal">
+                Confirmar agendamento
+              </p>
               <p className="text-xs text-ru-muted mt-0.5">
-                {mealType === 'lunch' ? 'Almoço' : 'Jantar'} · {mealTypeLabel} · {formatDate(date)} · {time}
+                {mealType === 'lunch' ? 'Almoço' : 'Jantar'} · {mealTypeLabel} · {formatDate(date)}{' '}
+                · {time}
               </p>
             </div>
           </div>
         )}
 
-        <button type="submit" disabled={loading} className="btn-primary flex items-center justify-center gap-2">
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary flex items-center justify-center gap-2"
+        >
           {loading ? <Spinner size={18} /> : 'Confirmar agendamento'}
         </button>
       </form>

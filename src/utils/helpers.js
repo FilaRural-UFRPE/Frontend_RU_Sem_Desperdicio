@@ -15,7 +15,9 @@ export function validateCPF(cpf) {
 }
 
 export function maskCPF(v) {
-  return v.replace(/\D/g, '').slice(0, 11)
+  return v
+    .replace(/\D/g, '')
+    .slice(0, 11)
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
@@ -51,6 +53,47 @@ export function userTypeLabel(type) {
   return map[type] ?? type
 }
 
+export function passwordStrength(pw) {
+  if (!pw) return { level: 0, label: '', color: '' }
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+  if (score <= 2) return { level: 1, label: 'Fraca', color: 'bg-red-500' }
+  if (score <= 3) return { level: 2, label: 'Média', color: 'bg-amber-500' }
+  return { level: 3, label: 'Forte', color: 'bg-emerald-500' }
+}
+
+export function toBRDate(dateStr) {
+  if (!dateStr) return ''
+  if (dateStr.includes('/')) return dateStr
+  const [y, m, d] = dateStr.split('-')
+  return `${d}/${m}/${y}`
+}
+
+export function localISODate(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export function formatLocalDate(value) {
+  if (!value) return '—'
+  const dateOnly = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (dateOnly) return `${dateOnly[3]}/${dateOnly[2]}/${dateOnly[1]}`
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Recife' }).format(new Date(value))
+}
+
+export const MEAL_TYPE_LABELS = {
+  select: '👑 Select',
+  leve_sabor: '🥗 Leve Sabor',
+  essencial: '🍱 Essencial',
+  vegetariano: '🌿 Vegetariano',
+}
+
 export function getErrorMessage(err) {
   const data = err?.response?.data
   const status = err?.response?.status
@@ -67,7 +110,8 @@ export function getErrorMessage(err) {
   if (data?.detail?.msg) {
     const msg = data.detail.msg
     if (msg.includes('duplicate key')) return 'Já tens uma refeição agendada para esse dia e tipo!'
-    if (msg.includes('unique constraint')) return 'Já tens uma refeição agendada para esse dia e tipo!'
+    if (msg.includes('unique constraint'))
+      return 'Já tens uma refeição agendada para esse dia e tipo!'
     return msg
   }
 
@@ -75,12 +119,12 @@ export function getErrorMessage(err) {
 
   if (data?.detail) {
     if (typeof data.detail === 'string') return data.detail
-    if (Array.isArray(data.detail)) return data.detail.map(d => d.msg).join(', ')
+    if (Array.isArray(data.detail)) return data.detail.map((d) => d.msg).join(', ')
   }
 
   // Erros de validação 422
   if (status === 422 && data?.details) {
-    return data.details.map(d => d.msg || d.message).join(', ')
+    return data.details.map((d) => d.msg || d.message).join(', ')
   }
 
   if (data?.msg) return data.msg

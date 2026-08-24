@@ -37,7 +37,10 @@ export default function Logo({ variant = 'full', size = 40, className = '' }) {
         className="object-contain rounded-xl"
       />
       <div>
-        <p className="font-display font-bold text-ru-charcoal leading-none" style={{ fontSize: size * 0.45 }}>
+        <p
+          className="font-display font-bold text-ru-charcoal leading-none"
+          style={{ fontSize: size * 0.45 }}
+        >
           Smart RU
         </p>
         <p className="font-body text-ru-muted leading-none" style={{ fontSize: size * 0.3 }}>

@@ -8,11 +8,15 @@ export default function NotFoundPage() {
         <Logo variant="icon" size={64} />
       </div>
       <h1 className="font-display font-bold text-6xl text-ru-blue mb-2">404</h1>
-      <p className="font-display font-semibold text-xl text-ru-charcoal mb-2">Página não encontrada</p>
+      <p className="font-display font-semibold text-xl text-ru-charcoal mb-2">
+        Página não encontrada
+      </p>
       <p className="text-ru-muted font-body text-sm mb-8 max-w-xs">
         Essa página não existe ou foi removida. Volte para o início.
       </p>
-      <Link to="/dashboard" className="btn-primary">Ir para o início</Link>
+      <Link to="/dashboard" className="btn-primary">
+        Ir para o início
+      </Link>
     </div>
   )
 }
