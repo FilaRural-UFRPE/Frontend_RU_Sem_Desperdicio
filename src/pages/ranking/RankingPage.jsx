@@ -82,9 +82,9 @@ export default function RankingPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Competição mensal</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Estatísticas de participação</p>
           <h1 className="font-display text-3xl md:text-4xl font-bold mt-2">Ranking</h1>
-          <p className="text-ru-muted mt-2">Quem mais compareceu ao RU no mês. Agendar é bom, comparecer vale ouro.</p>
+          <p className="text-ru-muted mt-2">Acompanhe sua participação no RU. Cada comparecimento é uma chance no sorteio de vouchers.</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="btn-secondary px-3 py-2" aria-label="Mês anterior"><ChevronLeft size={16} /></button>

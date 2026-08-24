@@ -42,11 +42,11 @@ export default function VoucherPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 voucher-page">
       <header>
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Premiação mensal</p>
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Premiação por sorteio</p>
         <h1 className="font-display text-3xl md:text-4xl font-bold text-ru-charcoal mt-2">Meu voucher</h1>
         <p className="text-ru-muted mt-2">
-          Participe do ranking mensal: quem terminar o mês em 1º lugar — com mais agendamentos e
-          refeições comparecidas — é coroado e ganha uma refeição gratuita.
+          Participe dos sorteios do SmartRU: cada comparecimento ao RU te coloca na lista de
+          elegíveis. Sorteados recebem uma refeição gratuita.
         </p>
       </header>
 
@@ -57,10 +57,10 @@ export default function VoucherPage() {
           <p className="font-display text-5xl font-bold text-ru-charcoal mt-4">{data.wins}<span className="text-xl text-ru-muted ml-1">{data.wins === 1 ? 'vitória' : 'vitórias'}</span></p>
           <p className="text-sm text-ru-muted mt-1">
             {data.available_prizes > 0
-              ? 'Você tem uma premiação pendente. Aguarde o funcionário gerar seu voucher.'
+              ? 'Você foi sorteado! Aguarde o funcionário gerar seu voucher.'
               : data.wins > 0
                 ? 'Suas premiações já foram resgatadas.'
-                : 'Vence o ranking mensal em 1º lugar para ganhar um voucher.'}
+                : 'Compareça ao RU e participe dos sorteios para ganhar um voucher.'}
           </p>
         </div>
       </section>
@@ -71,7 +71,7 @@ export default function VoucherPage() {
             <div>
               <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-100"><ShieldCheck size={16} /> Assinado digitalmente</span>
               <h2 className="font-display text-3xl font-bold mt-5">Uma refeição por nossa conta.</h2>
-              <p className="text-blue-100 mt-3 max-w-md">Sua premiação por vencer o ranking mensal. Apresente este QR no balcão junto com seu ID. Ele funciona mesmo quando a conexão estiver indisponível.</p>
+              <p className="text-blue-100 mt-3 max-w-md">Sua premiação por ser sorteado. Apresente este QR no balcão junto com seu ID. Ele funciona mesmo quando a conexão estiver indisponível.</p>
             </div>
             <div className="mt-8 pt-5 border-t border-white/20 flex flex-wrap gap-x-8 gap-y-3 text-sm">
               <div><p className="text-blue-200 text-xs uppercase tracking-wide">Titular</p><p className="font-semibold mt-1">{user?.name}</p></div>
@@ -88,7 +88,7 @@ export default function VoucherPage() {
         <section className="card text-center py-12">
           <Gift className="mx-auto text-ru-muted" size={34} />
           <h2 className="font-display font-semibold text-xl mt-4">Nenhum voucher ativo</h2>
-          <p className="text-ru-muted text-sm mt-2">Você ganha um voucher ao vencer o ranking mensal em 1º lugar. Seu prêmio aparecerá aqui.</p>
+          <p className="text-ru-muted text-sm mt-2">Você ganha um voucher ao ser sorteado entre os participantes. Seu prêmio aparecerá aqui.</p>
         </section>
       )}
 

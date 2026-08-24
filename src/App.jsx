@@ -31,6 +31,7 @@ import VoucherGeneratePage from './pages/staff/VoucherGeneratePage'
 import RankingPage from './pages/ranking/RankingPage'
 import ImportCsvPage from './pages/ranking/ImportCsvPage'
 import WinnerPage from './pages/ranking/WinnerPage'
+import RaffleCreatePage from './pages/ranking/RaffleCreatePage'
 
 // Utilitários
 import NotFoundPage from './pages/NotFoundPage'
@@ -183,6 +184,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedTypes={['funcionario']}>
                   <AppLayout><WinnerPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ranking/sorteios"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><RaffleCreatePage /></AppLayout>
                 </ProtectedRoute>
               }
             />

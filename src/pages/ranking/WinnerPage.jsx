@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Crown, CheckCircle2, ChevronLeft, ChevronRight, Trophy, AlertCircle, RefreshCw } from 'lucide-react'
+import { Crown, CheckCircle2, ChevronLeft, ChevronRight, Trophy, AlertCircle, RefreshCw, Shuffle } from 'lucide-react'
 import { rankingAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -34,6 +34,8 @@ export default function WinnerPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [drawing, setDrawing] = useState(false)
+  const [drawResult, setDrawResult] = useState(null)
 
   const [year, month] = mes.split('-').map(Number)
   const monthLabel = `${MONTH_NAMES[month - 1]} de ${year}`
@@ -85,13 +87,32 @@ export default function WinnerPage() {
     }
   }
 
+  const drawRaffle = async () => {
+    setDrawing(true)
+    setDrawResult(null)
+    try {
+      const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+      const endDate = `${year}-${String(month).padStart(2, '0')}-28`
+      const createRes = await rankingAPI.raffleCreate(`Sorteio ${monthLabel}`, startDate, endDate, 1)
+      const raffleId = createRes.data.data.id
+      const drawRes = await rankingAPI.raffleDraw(raffleId)
+      setDrawResult(drawRes.data)
+      toast(`Sorteio realizado! ${drawRes.data.winners.length} vencedor(es) de ${drawRes.data.total_participants} participantes.`)
+      await load()
+    } catch (error) {
+      toast(error.response?.data?.detail?.msg || error.response?.data?.error || 'Erro ao realizar sorteio', 'error')
+    } finally {
+      setDrawing(false)
+    }
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Staff · Premiação mensal</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Staff · Premiação</p>
           <h1 className="font-display text-3xl md:text-4xl font-bold mt-2">Vencedor do mês</h1>
-          <p className="text-ru-muted mt-2">Selecione quem será o vencedor com base no ranking do mês.</p>
+          <p className="text-ru-muted mt-2">Sorteie aleatoriamente ou selecione manualmente o vencedor.</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="btn-secondary px-3 py-2" aria-label="Mês anterior"><ChevronLeft size={16} /></button>
@@ -122,7 +143,27 @@ export default function WinnerPage() {
       )}
 
       <section className="card">
-        <h2 className="font-display text-xl font-semibold mb-4 flex items-center gap-2"><Crown size={20} className="text-ru-yellow" /> Ranking de {monthLabel}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-xl font-semibold flex items-center gap-2"><Crown size={20} className="text-ru-yellow" /> Ranking de {monthLabel}</h2>
+          <button onClick={drawRaffle} disabled={drawing || saving} className="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2 disabled:opacity-50">
+            <Shuffle size={16} /> {drawing ? 'Sorteando…' : 'Sortear'}
+          </button>
+        </div>
+
+        {drawResult && (
+          <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-200 p-4">
+            <p className="font-display font-semibold text-emerald-700">Sorteio realizado!</p>
+            <p className="text-sm text-ru-muted mt-1">{drawResult.winners.length} vencedor(es) sorteado(s) entre {drawResult.total_participants} participantes.</p>
+            <ul className="mt-2 space-y-1">
+              {drawResult.winners.map((w) => (
+                <li key={w.user_cpf} className="text-sm text-ru-charcoal flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-500" /> {w.name} — {w.user_cpf}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-ru-muted mt-2">Os vencedores foram notificados por push e email.</p>
+          </div>
+        )}
 
         {loading ? (
           <div className="animate-pulse h-72 rounded-xl bg-ru-cream-dark/50" aria-busy="true" />

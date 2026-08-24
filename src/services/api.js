@@ -160,6 +160,15 @@ export const rankingAPI = {
   },
   setWinner: (year, month, user_cpf) =>
     api.post('/ranking/winner', { year, month, user_cpf }),
+  // Raffle / Sorteio
+  raffleCreate: (name, startDate, endDate, numWinners = 1) =>
+    api.post('/ranking/raffle/create', { name, start_date: startDate, end_date: endDate, num_winners: numWinners }),
+  raffleList: (status = null) =>
+    api.get('/ranking/raffles', { params: status ? { status } : {} }),
+  raffleDraw: (raffleId) =>
+    api.post(`/ranking/raffle/${raffleId}/draw`),
+  raffleWinners: (raffleId) =>
+    api.get(`/ranking/raffle/${raffleId}/winners`),
 }
 
 export default api

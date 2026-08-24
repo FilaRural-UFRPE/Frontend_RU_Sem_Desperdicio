@@ -4,7 +4,7 @@ import Logo from '../ui/Logo'
 import {
   LayoutDashboard, Calendar, History, User, LogOut,
   BarChart3, ClipboardList, Menu, Lock, UtensilsCrossed, UploadCloud,
-  Gift, ScanLine, Trophy, Crown, FileSpreadsheet,
+  Gift, ScanLine, Trophy, Crown, FileSpreadsheet, Shuffle,
 } from 'lucide-react'
 import { useState } from 'react'
 import { userTypeLabel } from '../../utils/helpers'
@@ -28,6 +28,7 @@ const staffLinks = [
   { to: '/voucher/validar', icon: ScanLine, label: 'Validar voucher' },
   { to: '/ranking', icon: Trophy, label: 'Ranking' },
   { to: '/ranking/importar', icon: FileSpreadsheet, label: 'Importar presenças' },
+  { to: '/ranking/sorteios', icon: Shuffle, label: 'Sorteios' },
   { to: '/ranking/vencedor', icon: Crown, label: 'Vencedor do mês' },
   { to: '/cardapio-upload', icon: UploadCloud, label: 'Publicar Cardápio' },
   { to: '/perfil', icon: User, label: 'Perfil' },
