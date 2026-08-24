@@ -2,28 +2,25 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { scheduleAPI } from '../../services/api'
-import { Calendar, History, User, Clock, CheckCircle, Utensils, Users } from 'lucide-react'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import {
+  Calendar, History, User, Clock, CheckCircle, Utensils, Users,
+  Sun, Sunset, Moon, UtensilsCrossed,
+} from 'lucide-react'
 
-// Prioriza o filarural-backend (colaborativo + visao com fallback).
-// Enquanto o backend nao estiver no ar, cai direto na visao computacional.
 const QUEUE_API_URL =
   import.meta.env.VITE_QUEUE_API_URL ||
   import.meta.env.VITE_VISION_API_URL ||
   'https://filarural-visao-computacional-1.onrender.com/queue/status'
 
-// Mapeia o status textual da API para cor e rótulo amigável.
-// Propositalmente NÃO exibimos o número de pessoas na fila — só o nível.
 const QUEUE_STATUS_MAP = {
-  vazia:  { label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
-  pequena:{ label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
-  média:  { label: 'Fila média',   color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-500' },
-  grande: { label: 'Fila grande',  color: 'text-red-700',    bg: 'bg-red-50',    dot: 'bg-red-500' },
+  vazia:   { label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
+  pequena: { label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
+  média:   { label: 'Fila média',   color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-500' },
+  grande:  { label: 'Fila grande',  color: 'text-red-700',    bg: 'bg-red-50',    dot: 'bg-red-500' },
 }
 
-// Normaliza a resposta, aceitando tanto o formato da visao computacional
-// (status, waiting_time_minutes, available, is_stale, age_minutes)
-// quanto o formato do filarural-backend (queue_state, estimated_wait_minutes,
-// origin, updated_at) — assim o componente funciona nos dois sem trocar codigo.
 function normalizeQueueData(data) {
   if (!data) return null
 
@@ -51,6 +48,10 @@ function normalizeQueueData(data) {
   return { status, waiting_time_minutes: waitingTimeMinutes, available, is_stale: isStale, age_minutes: ageMinutes }
 }
 
+function SkeletonBlock({ className = '' }) {
+  return <div className={`bg-gray-100 rounded-2xl animate-pulse ${className}`} />
+}
+
 function QueueStatusCard() {
   const [queue, setQueue] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -64,30 +65,23 @@ function QueueStatusCard() {
         .finally(() => setLoading(false))
     }
 
-    fetchQueue() // busca imediatamente ao carregar a tela
-
-    // Atualiza a cada 5 minutos — mesmo intervalo do capture_and_analyze.py
+    fetchQueue()
     const intervalId = setInterval(fetchQueue, 5 * 60 * 1000)
-
-    return () => clearInterval(intervalId) // limpa o intervalo ao sair da tela
+    return () => clearInterval(intervalId)
   }, [])
 
   if (loading) {
-    return (
-      <div className="card flex items-center justify-center py-4 mb-3">
-        <div className="w-5 h-5 border-2 border-ru-blue border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <SkeletonBlock className="h-16 mb-3" />
   }
 
   if (!queue || !queue.available) {
-    return null // sem dado recente disponível — não mostra nada em vez de informação errada
+    return null
   }
 
   const info = QUEUE_STATUS_MAP[queue.status] || QUEUE_STATUS_MAP.média
 
   return (
-    <div className={`card ${info.bg} border-2 border-transparent mb-3`}>
+    <div className={`card ${info.bg} border-0 transition-colors duration-500 mb-3`}>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
           <Utensils size={18} className={info.color} />
@@ -102,11 +96,20 @@ function QueueStatusCard() {
           </p>
         </div>
         {queue.is_stale && queue.age_minutes !== null && (
-          <span className="text-[10px] text-ru-muted font-body">atualizado há {Math.round(queue.age_minutes)} min</span>
+          <span className="text-[10px] text-ru-muted font-body">
+            atualizado há {Math.round(queue.age_minutes)} min
+          </span>
         )}
       </div>
     </div>
   )
+}
+
+function getGreetingIcon() {
+  const hour = new Date().getHours()
+  if (hour < 18) return Sun
+  if (hour < 20) return Sunset
+  return Moon
 }
 
 export default function StudentDashboard() {
@@ -115,8 +118,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user?.cpf) return
-    scheduleAPI.mySchedules(user.cpf)
+    scheduleAPI.mySchedules()
       .then(({ data }) => {
         const raw = data?.data || []
         const parsed = raw.map(([id, schedule_type, schedule_date, estimated_time]) => ({
@@ -129,37 +131,66 @@ export default function StudentDashboard() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [user])
+  }, [])
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
+  const todayDate = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })
+  const GreetingIcon = getGreetingIcon()
+
+  const isLoadingInitial = loading && upcoming.length === 0
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <p className="text-ru-muted font-body text-sm">{greeting} 👋</p>
+      {/* Saudação */}
+      <div
+        className="mb-8 opacity-0 animate-slide-up"
+        style={{ animationDelay: '0ms' }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <GreetingIcon size={16} className="text-ru-yellow" />
+          <p className="text-ru-muted font-body text-sm capitalize">{greeting}</p>
+        </div>
         <h1 className="font-display font-bold text-2xl text-ru-charcoal">
           {user?.name?.split(' ')[0]}
         </h1>
+        <p className="text-ru-muted font-body text-xs capitalize mt-0.5">{todayDate}</p>
       </div>
 
-      <QueueStatusCard />
+      {/* Fila */}
+      <div
+        className="opacity-0 animate-slide-up"
+        style={{ animationDelay: '80ms' }}
+      >
+        <QueueStatusCard />
+      </div>
 
+      {/* Colaborar */}
       <Link
         to="/colaborar"
-        className="card mb-6 flex items-center gap-3 hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue"
+        className="card mb-6 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group border-2 hover:border-ru-blue opacity-0 animate-slide-up"
+        style={{ animationDelay: '160ms' }}
       >
         <div className="w-10 h-10 bg-ru-blue/10 rounded-xl flex items-center justify-center group-hover:bg-ru-blue transition-colors">
           <Users size={18} className="text-ru-blue group-hover:text-white transition-colors" />
         </div>
         <div className="flex-1">
           <p className="font-display font-semibold text-ru-charcoal text-sm">Está na fila agora?</p>
-          <p className="text-xs text-ru-muted font-body mt-0.5">Colabore e ajude outros estudantes a se planejarem</p>
+          <p className="text-xs text-ru-muted font-body mt-0.5">
+            Colabore e ajude outros estudantes a se planejarem
+          </p>
         </div>
       </Link>
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <Link to="/agendar" className="card hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue">
+      {/* Grid de navegação */}
+      <div
+        className="grid grid-cols-2 gap-4 mb-8 opacity-0 animate-slide-up"
+        style={{ animationDelay: '240ms' }}
+      >
+        <Link
+          to="/agendar"
+          className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group border-2 hover:border-ru-blue min-h-[44px]"
+        >
           <div className="w-10 h-10 bg-ru-blue/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-ru-blue transition-colors">
             <Calendar size={20} className="text-ru-blue group-hover:text-white transition-colors" />
           </div>
@@ -167,7 +198,10 @@ export default function StudentDashboard() {
           <p className="text-xs text-ru-muted font-body mt-0.5">Almoço ou jantar</p>
         </Link>
 
-        <Link to="/historico" className="card hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue">
+        <Link
+          to="/historico"
+          className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group border-2 hover:border-ru-blue min-h-[44px]"
+        >
           <div className="w-10 h-10 bg-ru-blue/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-ru-blue transition-colors">
             <History size={20} className="text-ru-blue group-hover:text-white transition-colors" />
           </div>
@@ -175,7 +209,10 @@ export default function StudentDashboard() {
           <p className="text-xs text-ru-muted font-body mt-0.5">Seus agendamentos</p>
         </Link>
 
-        <Link to="/perfil" className="card hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue">
+        <Link
+          to="/perfil"
+          className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group border-2 hover:border-ru-blue min-h-[44px]"
+        >
           <div className="w-10 h-10 bg-ru-blue/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-ru-blue transition-colors">
             <User size={20} className="text-ru-blue group-hover:text-white transition-colors" />
           </div>
@@ -192,21 +229,33 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      <div className="card">
+      {/* Próximas refeições */}
+      <div
+        className="card opacity-0 animate-slide-up"
+        style={{ animationDelay: '320ms' }}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display font-semibold text-ru-charcoal">Próximas refeições</h2>
-          <Link to="/historico" className="text-xs text-ru-blue font-body hover:underline">Ver todos</Link>
+          <Link to="/historico" className="text-xs text-ru-blue font-body hover:underline">
+            Ver todos
+          </Link>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-6">
-            <div className="w-6 h-6 border-2 border-ru-blue border-t-transparent rounded-full animate-spin" />
+        {isLoadingInitial ? (
+          <div className="flex flex-col gap-3">
+            <SkeletonBlock className="h-14" />
+            <SkeletonBlock className="h-14" />
           </div>
         ) : upcoming.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-4xl mb-3">🍽️</p>
-            <p className="font-body text-ru-muted text-sm">Nenhum agendamento ativo</p>
-            <Link to="/agendar" className="inline-block mt-3 text-sm text-ru-blue font-medium hover:underline">
+            <div className="w-12 h-12 bg-ru-cream rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <UtensilsCrossed size={22} className="text-ru-muted" />
+            </div>
+            <p className="font-body text-ru-muted text-sm">Nenhuma refeição agendada</p>
+            <Link
+              to="/agendar"
+              className="inline-block mt-3 text-sm text-ru-blue font-medium hover:underline"
+            >
               Agendar agora →
             </Link>
           </div>
