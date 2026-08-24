@@ -160,13 +160,18 @@ export default function RoletaPage() {
   }
 
   const confirmPrize = async () => {
+    const cpf = (pendingSpin.prize_type !== 'voucher' ? voucherForm.user_cpf.replace(/\D/g, '') : null)
+    if (cpf && cpf.length !== 11) {
+      toast('Informe um CPF válido para registrar o ganhador', 'error')
+      return
+    }
     try {
-      const { data } = await campaignAPI.confirmSpin(pendingSpin.spin_id)
+      const { data } = await campaignAPI.confirmSpin(pendingSpin.spin_id, cpf)
       if (!data.success) {
         toast(data.msg || 'Erro ao confirmar', 'error')
         return
       }
-      toast(`${PRIZE_META[pendingSpin.prize_type].label} entregue!`, 'success')
+      toast(`${PRIZE_META[pendingSpin.prize_type].label} entregue${cpf ? '!' : '!'}`, 'success')
       closeResult()
     } catch (error) {
       toast(
@@ -510,18 +515,20 @@ export default function RoletaPage() {
           onCancel={cancelSpin}
           onClose={cancelSpin}
         >
-          {pendingSpin.prize_type === 'voucher' && (
-            <div>
-              <label className="block text-sm font-medium text-ru-charcoal mb-1">
-                CPF do participante vencedor
-              </label>
-              <input
-                className="input-field"
-                inputMode="numeric"
-                placeholder="000.000.000-00"
-                value={voucherForm.user_cpf}
-                onChange={(e) => setVoucherForm({ user_cpf: e.target.value })}
-              />
+          <div>
+            <label className="block text-sm font-medium text-ru-charcoal mb-1">
+              {pendingSpin.prize_type === 'voucher'
+                ? 'CPF do participante vencedor'
+                : 'CPF do ganhador (opcional)'}
+            </label>
+            <input
+              className="input-field"
+              inputMode="numeric"
+              placeholder="000.000.000-00"
+              value={voucherForm.user_cpf}
+              onChange={(e) => setVoucherForm({ user_cpf: e.target.value })}
+            />
+            {pendingSpin.prize_type === 'voucher' && (
               <button
                 className="btn-primary w-full mt-4"
                 onClick={registerVoucher}
@@ -529,8 +536,8 @@ export default function RoletaPage() {
               >
                 {registering ? 'Gerando...' : 'Gerar QR code do voucher'}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </ResultModal>
       )}
 
@@ -617,13 +624,15 @@ function ResultModal({ prizeType, children, onConfirm, onCancel, onClose }) {
             <p className="text-sm text-ru-muted mt-2">
               Preencha os dados do participante para gerar o QR code de 5 almoços no RU.
             </p>
-            <div className="mt-5">{children}</div>
+            <div className="mt-5 text-left">{children}</div>
           </>
         ) : (
           <>
             <p className="text-sm text-ru-muted mt-2">
-              Entregue o prêmio ao participante e confirme abaixo.
+              Entregue o prêmio ao participante. Informe o CPF para registrar o ganhador no
+              histórico.
             </p>
+            <div className="mt-5 text-left">{children}</div>
             <div className="flex gap-3 mt-5">
               <button
                 className="btn-secondary flex-1 inline-flex items-center justify-center gap-2"

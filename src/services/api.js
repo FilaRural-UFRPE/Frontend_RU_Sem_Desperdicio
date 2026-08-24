@@ -195,7 +195,10 @@ export const campaignAPI = {
   participants: (id, onlyEligible = false) =>
     api.get(`/campaign/${id}/participants`, { params: { only_eligible: onlyEligible } }),
   spin: (id) => api.post(`/campaign/${id}/spin`),
-  confirmSpin: (spinId) => api.post(`/campaign/spin/${spinId}/confirm`),
+  confirmSpin: (spinId, userCpf = null) =>
+    api.post(`/campaign/spin/${spinId}/confirm`, null, {
+      params: userCpf ? { user_cpf: userCpf } : {},
+    }),
   cancelSpin: (spinId) => api.post(`/campaign/spin/${spinId}/cancel`),
   registerVoucher: (spinId, userCpf) =>
     api.post(`/campaign/spin/${spinId}/voucher`, { user_cpf: userCpf }),
@@ -208,6 +211,7 @@ export const campaignAPI = {
   listVouchers: (campaignId = null) =>
     api.get('/campaign/vouchers', { params: campaignId ? { campaign_id: campaignId } : {} }),
   myVoucher: () => api.get('/campaign/my-voucher'),
+  myProgress: () => api.get('/campaign/my-progress'),
 }
 
 export function buildEventVoucherUsePayload(nonce, signatureHex, mealType = 'lunch') {

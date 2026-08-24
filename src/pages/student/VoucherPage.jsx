@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
-import { Download, Gift, Printer, ShieldCheck, Sparkles, UtensilsCrossed } from 'lucide-react'
+import {
+  CheckCircle2,
+  Download,
+  Gift,
+  Printer,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  UtensilsCrossed,
+} from 'lucide-react'
 import { voucherAPI, campaignAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -15,15 +24,19 @@ export default function VoucherPage() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState({ wins: 0, available_prizes: 0, vouchers: [] })
   const [eventVoucher, setEventVoucher] = useState(null)
+  const [campaignProgress, setCampaignProgress] = useState(null)
 
   const load = async () => {
     try {
-      const [regular, event] = await Promise.allSettled([
+      const [regular, event, progress] = await Promise.allSettled([
         voucherAPI.mine(),
         campaignAPI.myVoucher(),
+        campaignAPI.myProgress(),
       ])
       if (regular.status === 'fulfilled') setData(regular.value.data.data)
       if (event.status === 'fulfilled') setEventVoucher(event.value.data?.data ?? null)
+      if (progress.status === 'fulfilled')
+        setCampaignProgress(progress.value.data?.data ?? null)
       if (regular.status === 'rejected' && event.status === 'rejected') {
         throw regular.reason
       }
@@ -90,6 +103,70 @@ export default function VoucherPage() {
           </p>
         </div>
       </section>
+
+      {campaignProgress?.campaign && (
+        <section className="card overflow-hidden relative">
+          <div className="absolute right-0 top-0 w-32 h-32 bg-ru-yellow/10 rounded-bl-full" />
+          <div className="relative">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2 text-ru-blue font-display font-semibold">
+                <Target size={18} /> Campanha RU Sem Desperdício
+              </div>
+              <span className="text-xs font-mono uppercase tracking-widest text-ru-muted">
+                {campaignProgress.campaign.name}
+              </span>
+            </div>
+            <div className="grid sm:grid-cols-[auto_1fr] gap-6 mt-5 items-center">
+              <div className="text-center">
+                <p className="font-display text-4xl font-bold text-ru-charcoal">
+                  {campaignProgress.progress?.presence_days ?? 0}
+                  <span className="text-lg text-ru-muted ml-1">
+                    / {campaignProgress.campaign.required_days}
+                  </span>
+                </p>
+                <p className="text-xs text-ru-muted mt-1">dias de agendamento e presença</p>
+              </div>
+              <div>
+                <div className="h-3 rounded-full bg-ru-cream-dark overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all bg-ru-blue"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        ((campaignProgress.progress?.presence_days ?? 0) /
+                          campaignProgress.campaign.required_days) *
+                          100
+                      )}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-ru-muted mt-3">
+                  {campaignProgress.progress?.is_eligible ? (
+                    <span className="inline-flex items-center gap-2 font-semibold text-emerald-600">
+                      <CheckCircle2 size={16} /> Nota conquistada! Você tem direito a concorrer na
+                      roleta do evento.
+                    </span>
+                  ) : campaignProgress.progress ? (
+                    `Faltam ${Math.max(
+                      0,
+                      campaignProgress.campaign.required_days -
+                        campaignProgress.progress.presence_days
+                    )} dias para ganhar a nota e concorrer na roleta.`
+                  ) : (
+                    'Agende e compareça ao RU para acumular dias e ganhar sua nota.'
+                  )}
+                </p>
+                <p className="text-xs text-ru-muted mt-2">
+                  {campaignProgress.progress?.points !== undefined && (
+                    <>Pontuação: {campaignProgress.progress.points} · </>
+                  )}
+                  Evento em {formatDate(campaignProgress.campaign.event_date)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {active ? (
         <section className="voucher-ticket bg-ru-blue-dark text-white rounded-3xl overflow-hidden shadow-xl grid md:grid-cols-[1fr_auto]">
