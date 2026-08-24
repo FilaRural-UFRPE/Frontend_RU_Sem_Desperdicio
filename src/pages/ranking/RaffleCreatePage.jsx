@@ -72,6 +72,7 @@ export default function RaffleCreatePage() {
   }
 
   const draw = async (raffleId) => {
+    if (!window.confirm('Realizar este sorteio agora? Esta ação não pode ser desfeita.')) return
     setDrawing(raffleId)
     try {
       const res = await rankingAPI.raffleDraw(raffleId)

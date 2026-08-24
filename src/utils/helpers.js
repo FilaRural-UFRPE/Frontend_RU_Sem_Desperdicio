@@ -71,6 +71,20 @@ export function toBRDate(dateStr) {
   return `${d}/${m}/${y}`
 }
 
+export function localISODate(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export function formatLocalDate(value) {
+  if (!value) return '—'
+  const dateOnly = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (dateOnly) return `${dateOnly[3]}/${dateOnly[2]}/${dateOnly[1]}`
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Recife' }).format(new Date(value))
+}
+
 export const MEAL_TYPE_LABELS = {
   select: '👑 Select',
   leve_sabor: '🥗 Leve Sabor',

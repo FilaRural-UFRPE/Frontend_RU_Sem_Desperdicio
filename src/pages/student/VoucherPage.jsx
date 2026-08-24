@@ -4,22 +4,31 @@ import { Download, Gift, Printer, ShieldCheck, Sparkles, UtensilsCrossed } from 
 import { voucherAPI, campaignAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { formatLocalDate } from '../../utils/helpers'
 
-const formatDate = (value) => new Intl.DateTimeFormat('pt-BR').format(new Date(value))
+const formatDate = formatLocalDate
 
 export default function VoucherPage() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const qrRef = useRef(null)
+  const regularQrRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState({ wins: 0, available_prizes: 0, vouchers: [] })
   const [eventVoucher, setEventVoucher] = useState(null)
 
   const load = async () => {
     try {
-      const [regular, event] = await Promise.all([voucherAPI.mine(), campaignAPI.myVoucher()])
-      setData(regular.data.data)
-      setEventVoucher(event.data?.data ?? null)
+      const [regular, event] = await Promise.allSettled([
+        voucherAPI.mine(),
+        campaignAPI.myVoucher(),
+      ])
+      if (regular.status === 'fulfilled') setData(regular.value.data.data)
+      if (event.status === 'fulfilled') setEventVoucher(event.value.data?.data ?? null)
+      if (regular.status === 'rejected' && event.status === 'rejected') {
+        throw regular.reason
+      }
+      if (regular.status === 'rejected') toast('Não foi possível carregar o voucher mensal', 'error')
+      if (event.status === 'rejected') toast('Não foi possível carregar o voucher de evento', 'warning')
     } catch (error) {
       toast(error.response?.data?.detail || 'Não foi possível carregar seus vouchers', 'error')
     } finally {
@@ -31,7 +40,7 @@ export default function VoucherPage() {
   const active = useMemo(() => data.vouchers.find((voucher) => voucher.status === 'active'), [data])
 
   const download = () => {
-    const canvas = qrRef.current?.querySelector('canvas')
+    const canvas = regularQrRef.current?.querySelector('canvas')
     if (!canvas) return
     const link = document.createElement('a')
     link.download = `voucher-smartru-${active.id}.png`
@@ -81,7 +90,7 @@ export default function VoucherPage() {
               <div><p className="text-blue-200 text-xs uppercase tracking-wide">Voucher</p><p className="font-mono font-semibold mt-1">#{active.id}</p></div>
             </div>
           </div>
-          <div className="bg-white p-7 flex flex-col items-center justify-center text-ru-charcoal relative voucher-stub" ref={qrRef}>
+          <div className="bg-white p-7 flex flex-col items-center justify-center text-ru-charcoal relative voucher-stub" ref={regularQrRef}>
             <QRCodeCanvas value={active.qr_data} size={210} level="M" marginSize={1} />
             <p className="font-mono text-[10px] tracking-widest uppercase mt-3 text-ru-muted">SmartRU · uso único</p>
           </div>
@@ -130,7 +139,7 @@ export default function VoucherPage() {
                 </div>
               )}
             </div>
-            <div className="bg-white p-7 flex flex-col items-center justify-center text-ru-charcoal relative voucher-stub" ref={qrRef}>
+            <div className="bg-white p-7 flex flex-col items-center justify-center text-ru-charcoal relative voucher-stub">
               <QRCodeCanvas value={eventVoucher.qr_data} size={200} level="M" marginSize={1} />
               <p className="font-mono text-[10px] tracking-widest uppercase mt-3 text-ru-muted">SmartRU · evento</p>
             </div>

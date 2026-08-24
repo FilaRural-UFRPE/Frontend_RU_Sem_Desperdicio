@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { scheduleAPI } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { getErrorMessage, MEAL_TYPE_LABELS } from '../../utils/helpers'
+import { getErrorMessage, MEAL_TYPE_LABELS, localISODate } from '../../utils/helpers'
 import Modal from '../../components/ui/Modal'
 import Spinner from '../../components/ui/Spinner'
 import { RefreshCw, X } from 'lucide-react'
 
-const today = new Date().toISOString().split('T')[0]
+const today = localISODate()
 
 const MEAL_TYPES = [
   { value: 'select', emoji: '👑', label: 'Select' },
@@ -28,7 +28,7 @@ export default function HistoryPage() {
   const { toast } = useToast()
   const { user } = useAuth()
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true)
     scheduleAPI.mySchedules()
       .then(({ data }) => {
@@ -45,9 +45,9 @@ export default function HistoryPage() {
       })
       .catch(() => toast('Erro ao carregar agendamentos', 'error'))
       .finally(() => setLoading(false))
-  }
+  }, [toast])
 
-  useEffect(load, [])
+  useEffect(load, [load])
 
   const toBackendDate = (dateStr) => {
     const clean = dateStr?.split('T')[0]

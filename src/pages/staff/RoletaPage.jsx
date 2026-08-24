@@ -9,6 +9,7 @@ import { campaignAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import Spinner from '../../components/ui/Spinner'
 import Modal from '../../components/ui/Modal'
+import { localISODate } from '../../utils/helpers'
 
 const PRIZE_META = {
   voucher: { label: 'Voucher 1 semana', icon: Gift, color: '#1a3a8f', highlight: '#f5a623' },
@@ -280,7 +281,7 @@ export default function RoletaPage() {
             <div className="card flex flex-col items-center">
               <h2 className="font-display font-semibold text-lg text-ru-charcoal mb-4 self-start">Rode a roleta</h2>
 
-              <div className="relative">
+              <div className="roulette-wheel relative w-full max-w-[480px] aspect-square overflow-hidden">
                 {segments.length > 0 && (
                   <WheelCanvas
                     key={segments.map((s) => s.prizeType).join('-')}
@@ -305,7 +306,7 @@ export default function RoletaPage() {
                   />
                 )}
                 {segments.length === 0 && (
-                  <div className="w-[480px] h-[480px] max-w-full grid place-items-center text-ru-muted">
+                  <div className="w-full h-full grid place-items-center text-ru-muted">
                     <p className="text-center px-8">Todos os prêmios já foram sorteados.</p>
                   </div>
                 )}
@@ -370,12 +371,12 @@ export default function RoletaPage() {
 
       {showSetup && <CampaignSetup onClose={() => setShowSetup(false)} onCreated={(id) => { setShowSetup(false); setCampaignId(id) }} />}
 
-      {showResult && pendingSpin && (
+      {showResult && pendingSpin && !issuedVoucher && (
         <ResultModal
           prizeType={pendingSpin.prize_type}
           onConfirm={confirmPrize}
           onCancel={cancelSpin}
-          onClose={closeResult}
+          onClose={cancelSpin}
         >
           {pendingSpin.prize_type === 'voucher' && (
             <div>
@@ -467,7 +468,7 @@ function CampaignSetup({ onClose, onCreated }) {
   const { toast } = useToast()
   const [form, setForm] = useState({
     name: `Desafio ${new Date().toLocaleDateString('pt-BR', { month: 'long', day: 'numeric' })}`,
-    event_date: new Date().toISOString().slice(0, 10),
+    event_date: localISODate(),
     days_lookback: 12,
     required_days: 10,
     voucher: 1,

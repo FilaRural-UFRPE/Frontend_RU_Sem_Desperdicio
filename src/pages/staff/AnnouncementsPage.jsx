@@ -72,6 +72,7 @@ export default function AnnouncementsPage() {
   }
 
   const notify = async (id) => {
+    if (!window.confirm('Enviar este aviso por e-mail para todos os usuários cadastrados?')) return
     setSending(id)
     try {
       const { data } = await announcementAPI.notify(id)

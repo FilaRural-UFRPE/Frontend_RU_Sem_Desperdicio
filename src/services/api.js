@@ -203,12 +203,16 @@ export const campaignAPI = {
     api.post(`/campaign/spin/${spinId}/voucher`, { user_cpf: userCpf }),
   getVoucher: (voucherId) =>
     api.get(`/campaign/voucher/${voucherId}`),
-  useVoucher: (voucherId, mealType = 'lunch') =>
-    api.post(`/campaign/voucher/${voucherId}/use`, { meal_type: mealType }),
+  useVoucher: (voucherId, nonce, signatureHex, mealType = 'lunch') =>
+    api.post(`/campaign/voucher/${voucherId}/use`, buildEventVoucherUsePayload(nonce, signatureHex, mealType)),
   listVouchers: (campaignId = null) =>
     api.get('/campaign/vouchers', { params: campaignId ? { campaign_id: campaignId } : {} }),
   myVoucher: () =>
     api.get('/campaign/my-voucher'),
+}
+
+export function buildEventVoucherUsePayload(nonce, signatureHex, mealType = 'lunch') {
+  return { meal_type: mealType, nonce, signature_hex: signatureHex }
 }
 
 export default api

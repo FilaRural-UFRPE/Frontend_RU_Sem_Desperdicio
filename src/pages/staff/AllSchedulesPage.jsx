@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { scheduleAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import Spinner from '../../components/ui/Spinner'
 import { RefreshCw, Search, CheckCircle } from 'lucide-react'
-import { toBRDate, MEAL_TYPE_LABELS } from '../../utils/helpers'
+import { toBRDate, MEAL_TYPE_LABELS, localISODate } from '../../utils/helpers'
 
-const todayStr = new Date().toISOString().split('T')[0]
+const todayStr = localISODate()
 
 export default function AllSchedulesPage() {
   const [schedules, setSchedules] = useState([])
@@ -16,7 +16,7 @@ export default function AllSchedulesPage() {
   const [confirming, setConfirming] = useState(null)
   const { toast } = useToast()
 
-  const load = (filterDate = null) => {
+  const load = useCallback((filterDate = null) => {
     setLoading(true)
     setShowingAll(!filterDate)
     scheduleAPI.allSchedules(filterDate)
@@ -37,9 +37,9 @@ export default function AllSchedulesPage() {
       })
       .catch(() => toast('Erro ao carregar agendamentos', 'error'))
       .finally(() => setLoading(false))
-  }
+  }, [toast])
 
-  useEffect(() => { load(toBRDate(todayStr)) }, [])
+  useEffect(() => { load(toBRDate(todayStr)) }, [load])
 
   const handleDateChange = (e) => {
     const newDate = e.target.value

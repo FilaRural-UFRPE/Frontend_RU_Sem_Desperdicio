@@ -1,50 +1,44 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import AppLayout from './components/layout/AppLayout'
+import LoadingScreen from './components/shared/LoadingScreen'
 
-// Páginas públicas
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
-import PasswordRecoverPage from './pages/auth/PasswordRecoverPage'
-import PasswordResetPage from './pages/auth/PasswordResetPage'
-
-// Páginas autenticadas
-import DashboardRouter from './pages/DashboardRouter'
-import SchedulePage from './pages/student/SchedulePage'
-import HistoryPage from './pages/student/HistoryPage'
-import ProfilePage from './pages/student/ProfilePage'
-import ChangePasswordPage from './pages/student/ChangePasswordPage'
-import MenuPage from './pages/student/MenuPage'
-import VoucherPage from './pages/student/VoucherPage'
-import QueueCollaboratePage from './pages/student/QueueCollaboratePage'
-
-// Páginas exclusivas do funcionário
-import AllSchedulesPage from './pages/staff/AllSchedulesPage'
-import ReportsPage from './pages/staff/ReportsPage'
-import MenuUploadPage from './pages/staff/MenuUploadPage' // ✅ adicionado
-import VoucherValidatePage from './pages/staff/VoucherValidatePage'
-import VoucherGeneratePage from './pages/staff/VoucherGeneratePage'
-import RoletaPage from './pages/staff/RoletaPage'
-import CashierPage from './pages/staff/CashierPage'
-import EventVoucherHistoryPage from './pages/staff/EventVoucherHistoryPage'
-import AnnouncementsPage from './pages/staff/AnnouncementsPage'
-
-// Ranking / Leaderboard
-import RankingPage from './pages/ranking/RankingPage'
-import ImportCsvPage from './pages/ranking/ImportCsvPage'
-import WinnerPage from './pages/ranking/WinnerPage'
-import RaffleCreatePage from './pages/ranking/RaffleCreatePage'
-
-// Utilitários
-import NotFoundPage from './pages/NotFoundPage'
+const AppLayout = lazy(() => import('./components/layout/AppLayout'))
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+const PasswordRecoverPage = lazy(() => import('./pages/auth/PasswordRecoverPage'))
+const PasswordResetPage = lazy(() => import('./pages/auth/PasswordResetPage'))
+const DashboardRouter = lazy(() => import('./pages/DashboardRouter'))
+const SchedulePage = lazy(() => import('./pages/student/SchedulePage'))
+const HistoryPage = lazy(() => import('./pages/student/HistoryPage'))
+const ProfilePage = lazy(() => import('./pages/student/ProfilePage'))
+const ChangePasswordPage = lazy(() => import('./pages/student/ChangePasswordPage'))
+const MenuPage = lazy(() => import('./pages/student/MenuPage'))
+const VoucherPage = lazy(() => import('./pages/student/VoucherPage'))
+const QueueCollaboratePage = lazy(() => import('./pages/student/QueueCollaboratePage'))
+const AllSchedulesPage = lazy(() => import('./pages/staff/AllSchedulesPage'))
+const ReportsPage = lazy(() => import('./pages/staff/ReportsPage'))
+const MenuUploadPage = lazy(() => import('./pages/staff/MenuUploadPage'))
+const VoucherValidatePage = lazy(() => import('./pages/staff/VoucherValidatePage'))
+const VoucherGeneratePage = lazy(() => import('./pages/staff/VoucherGeneratePage'))
+const RoletaPage = lazy(() => import('./pages/staff/RoletaPage'))
+const CashierPage = lazy(() => import('./pages/staff/CashierPage'))
+const EventVoucherHistoryPage = lazy(() => import('./pages/staff/EventVoucherHistoryPage'))
+const AnnouncementsPage = lazy(() => import('./pages/staff/AnnouncementsPage'))
+const RankingPage = lazy(() => import('./pages/ranking/RankingPage'))
+const ImportCsvPage = lazy(() => import('./pages/ranking/ImportCsvPage'))
+const WinnerPage = lazy(() => import('./pages/ranking/WinnerPage'))
+const RaffleCreatePage = lazy(() => import('./pages/ranking/RaffleCreatePage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
+          <Suspense fallback={<LoadingScreen />}>
           <Routes>
             {/* Público */}
             <Route path="/login" element={<LoginPage />} />
@@ -239,6 +233,7 @@ export default function App() {
             {/* 404 */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </Suspense>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

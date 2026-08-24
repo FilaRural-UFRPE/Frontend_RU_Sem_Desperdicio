@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext'
 import FormInput from '../../components/ui/FormInput'
 import Spinner from '../../components/ui/Spinner'
 import Logo from '../../components/ui/Logo'
-import { maskCPF, getErrorMessage } from '../../utils/helpers'
+import { maskCPF } from '../../utils/helpers'
 import { Lock, CreditCard } from 'lucide-react'
 import logoImg from '../../assets/logo.jpg'
 

@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { scheduleAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { getErrorMessage, formatDate } from '../../utils/helpers'
+import { getErrorMessage, formatDate, localISODate } from '../../utils/helpers'
 import Spinner from '../../components/ui/Spinner'
 import { CalendarCheck } from 'lucide-react'
 
-const today = new Date().toISOString().split('T')[0]
+const today = localISODate()
 
 const MEAL_TYPES = [
   { value: 'select', emoji: '👑', label: 'Select', sub: 'Refeição premium' },

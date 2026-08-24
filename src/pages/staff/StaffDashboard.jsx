@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { reportAPI, scheduleAPI, userAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -12,12 +12,11 @@ import {
   Clock, CalendarDays, UserX, Activity,
 } from 'lucide-react'
 import Spinner from '../../components/ui/Spinner'
-import { toBRDate } from '../../utils/helpers'
+import { toBRDate, localISODate } from '../../utils/helpers'
 
 const AI_URL = 'https://desperdicio-ia.onrender.com'
 
-const today = new Date()
-const todayStr = today.toISOString().split('T')[0]
+const todayStr = localISODate()
 
 function formatShortDate(dateStr) {
   const [, m, d] = dateStr.split('-')
@@ -56,7 +55,7 @@ export default function StaffDashboard() {
   const [totalUsers, setTotalUsers] = useState(null)
   const [usersLoading, setUsersLoading] = useState(true)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const brDate = toBRDate(date)
@@ -88,7 +87,7 @@ export default function StaffDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [date, toast])
 
   const loadTotalUsers = async () => {
     setUsersLoading(true)
@@ -119,7 +118,7 @@ export default function StaffDashboard() {
     }
   }
 
-  const loadNoshowSummary = async () => {
+  const loadNoshowSummary = useCallback(async () => {
     setNoshowLoading(true)
     try {
       const res = await fetch(`${AI_URL}/api/noshow/summary?date=${date}`)
@@ -130,7 +129,7 @@ export default function StaffDashboard() {
     } finally {
       setNoshowLoading(false)
     }
-  }
+  }, [date])
 
   const loadPatterns = async () => {
     setPatternsLoading(true)
@@ -158,8 +157,8 @@ export default function StaffDashboard() {
     }
   }
 
-  useEffect(() => { load() }, [date])
-  useEffect(() => { loadNoshowSummary() }, [date])
+  useEffect(() => { load() }, [load])
+  useEffect(() => { loadNoshowSummary() }, [loadNoshowSummary])
   useEffect(() => { loadForecast(); loadPatterns(); loadMenuInsights(); loadTotalUsers() }, [])
 
   const handleExport = async () => {

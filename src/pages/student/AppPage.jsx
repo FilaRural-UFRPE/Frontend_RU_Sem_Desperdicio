@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Smartphone, Download, ChevronDown, ChevronUp, CheckCircle, Globe } from 'lucide-react'
+import { Smartphone, Download, CheckCircle, Globe } from 'lucide-react'
 
 function detectPlatform() {
   const ua = navigator.userAgent || navigator.vendor || window.opera || ''

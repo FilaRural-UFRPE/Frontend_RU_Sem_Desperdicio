@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext'
 import FormInput from '../../components/ui/FormInput'
 import Spinner from '../../components/ui/Spinner'
 import Logo from '../../components/ui/Logo'
-import { maskCPF, validateCPF, getErrorMessage, passwordStrength } from '../../utils/helpers'
+import { maskCPF, getErrorMessage, passwordStrength } from '../../utils/helpers'
 import { User, Mail, CreditCard, Lock, GraduationCap, MapPin } from 'lucide-react'
 
 // Funcionário removido do cadastro público conforme instrução do backend

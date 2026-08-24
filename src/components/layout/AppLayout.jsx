@@ -80,7 +80,7 @@ export default function AppLayout({ children }) {
       </div>
 
       {/* Links */}
-      <nav className="flex-1 px-3 py-2 flex flex-col gap-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-2 flex flex-col gap-1">
         {links.map((l) => <NavItem key={l.to} {...l} />)}
       </nav>
 
@@ -115,12 +115,12 @@ export default function AppLayout({ children }) {
       <div className="flex-1 lg:ml-56 flex flex-col min-h-screen">
         <header className="lg:hidden flex items-center justify-between px-4 py-4 bg-white border-b border-ru-cream-dark sticky top-0 z-20">
           <Logo variant="full" size={32} />
-          <button onClick={() => setMobileOpen(true)} className="text-ru-charcoal">
+          <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu" className="min-w-11 min-h-11 grid place-items-center text-ru-charcoal">
             <Menu size={22} />
           </button>
         </header>
 
-        <main className="flex-1 p-6 animate-fade-in">
+        <main className="flex-1 p-4 sm:p-6 animate-fade-in">
           {children}
         </main>
       </div>

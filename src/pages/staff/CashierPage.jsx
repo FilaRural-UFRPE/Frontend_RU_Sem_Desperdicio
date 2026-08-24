@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Camera, CheckCircle2, History, Keyboard, ScrollText, UtensilsCrossed } from 'lucide-react'
-import { campaignAPI } from '../../services/api'
+import api, { campaignAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
-import { parseQRData } from '../../utils/voucherCrypto'
+import {
+  fetchAndCachePublicKey,
+  getCachedPublicKey,
+  parseQRData,
+  verifyVoucherSignature,
+} from '../../utils/voucherCrypto'
+import { formatLocalDate, localISODate } from '../../utils/helpers'
 
-const formatDate = (value) => new Intl.DateTimeFormat('pt-BR').format(new Date(value))
+const formatDate = formatLocalDate
 
 export default function CashierPage() {
   const { toast } = useToast()
@@ -14,6 +20,7 @@ export default function CashierPage() {
   const [cameraOn, setCameraOn] = useState(false)
   const [manual, setManual] = useState('')
   const [voucher, setVoucher] = useState(null)
+  const [scannedQr, setScannedQr] = useState(null)
   const [loading, setLoading] = useState(false)
   const [usedToday, setUsedToday] = useState(false)
 
@@ -27,6 +34,7 @@ export default function CashierPage() {
 
   const startCamera = async () => {
     setVoucher(null)
+    setScannedQr(null)
     setUsedToday(false)
     const scanner = new Html5Qrcode('evoucher-reader')
     scannerRef.current = scanner
@@ -39,18 +47,27 @@ export default function CashierPage() {
     }
   }
 
-  const loadVoucher = async (voucherId) => {
+  const loadVoucher = async (parsed) => {
     setLoading(true)
     setVoucher(null)
+    setScannedQr(null)
     setUsedToday(false)
     try {
-      const { data } = await campaignAPI.getVoucher(voucherId)
+      let publicKey = getCachedPublicKey()
+      if (!publicKey) publicKey = await fetchAndCachePublicKey(api)
+      if (!(await verifyVoucherSignature(publicKey, parsed))) {
+        throw new Error('Assinatura do QR code inválida')
+      }
+      if (new Date(parsed.e) <= new Date()) throw new Error('Voucher expirado')
+      const { data } = await campaignAPI.getVoucher(parsed.id)
       if (!data.success) { toast(data.msg, 'error'); return }
+      if (data.data.user_cpf !== parsed.c) throw new Error('QR não pertence a este voucher')
       setVoucher(data.data)
-      const today = new Date().toISOString().slice(0, 10)
+      setScannedQr(parsed)
+      const today = localISODate()
       setUsedToday(data.data.usages?.some((u) => u.meal_date === today))
     } catch (error) {
-      toast(error.response?.data?.msg || error.response?.data?.detail || 'Erro ao buscar voucher', 'error')
+      toast(error.response?.data?.msg || error.response?.data?.detail || error.message || 'Erro ao buscar voucher', 'error')
     } finally {
       setLoading(false)
     }
@@ -62,7 +79,7 @@ export default function CashierPage() {
     try {
       const parsed = parseQRData(rawData.trim())
       if (parsed.v !== 2) throw new Error('Este QR não é um voucher de evento SmartRU')
-      loadVoucher(parsed.id)
+      await loadVoucher(parsed)
     } catch (error) {
       toast(error.message || 'QR inválido', 'error')
     } finally {
@@ -71,13 +88,13 @@ export default function CashierPage() {
   }
 
   const useVoucher = async () => {
-    if (!voucher || usedToday) return
+    if (!voucher || !scannedQr || usedToday) return
     try {
-      const { data } = await campaignAPI.useVoucher(voucher.id)
+      const { data } = await campaignAPI.useVoucher(voucher.id, scannedQr.n, scannedQr.s)
       if (!data.success) { toast(data.msg, 'error'); return }
       toast(`${data.data.user_name} — almoço confirmado! (${data.data.meals_used}/${data.data.total_meals})`, 'success')
       setUsedToday(true)
-      loadVoucher(voucher.id)
+      setVoucher((current) => current ? { ...current, ...data.data } : current)
     } catch (error) {
       toast(error.response?.data?.msg || error.response?.data?.detail || 'Erro ao registrar refeição', 'error')
     }
@@ -118,7 +135,7 @@ export default function CashierPage() {
             <p className="text-xs text-ru-muted mt-1">Use esta opção se a câmera não funcionar.</p>
             <div className="flex flex-col sm:flex-row gap-3 mt-3">
               <input id="evoucher-code" className="input-field font-mono text-xs" value={manual} onChange={(e) => setManual(e.target.value)} placeholder='{"v":2,"id":1,…}' />
-              <button className="btn-primary shrink-0" onClick={() => { try { const p = parseQRData(manual.trim()); if (p.v !== 2) throw new Error(''); loadVoucher(p.id) } catch { toast('QR inválido', 'error') } }} disabled={!manual.trim()}>Buscar</button>
+              <button className="btn-primary shrink-0" onClick={async () => { try { const p = parseQRData(manual.trim()); if (p.v !== 2) throw new Error(''); await loadVoucher(p) } catch (error) { toast(error.message || 'QR inválido', 'error') } }} disabled={!manual.trim()}>Validar QR</button>
             </div>
           </div>
         </section>

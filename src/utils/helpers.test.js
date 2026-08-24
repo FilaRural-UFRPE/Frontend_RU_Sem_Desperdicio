@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { validateCPF, formatDate, toBRDate, passwordStrength, MEAL_TYPE_LABELS } from './helpers'
+import {
+  validateCPF, formatDate, toBRDate, passwordStrength, MEAL_TYPE_LABELS,
+  formatLocalDate, localISODate,
+} from './helpers'
 
 describe('validateCPF', () => {
   it('accepts valid CPF', () => {
@@ -93,5 +96,19 @@ describe('MEAL_TYPE_LABELS', () => {
     expect(MEAL_TYPE_LABELS.leve_sabor).toBeDefined()
     expect(MEAL_TYPE_LABELS.essencial).toBeDefined()
     expect(MEAL_TYPE_LABELS.vegetariano).toBeDefined()
+  })
+})
+
+describe('local date helpers', () => {
+  it('formats a civil ISO date without shifting timezone', () => {
+    expect(formatLocalDate('2026-08-24')).toBe('24/08/2026')
+  })
+
+  it('uses the Recife timezone for instants', () => {
+    expect(formatLocalDate('2026-08-24T00:30:00Z')).toBe('23/08/2026')
+  })
+
+  it('builds an ISO date from local calendar fields', () => {
+    expect(localISODate(new Date(2026, 7, 24, 23, 30))).toBe('2026-08-24')
   })
 })

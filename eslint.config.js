@@ -52,6 +52,12 @@ export default [
       },
     },
   },
+  {
+    files: ['src/contexts/*.jsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   prettier,
   {
     ignores: ['dist/**', 'node_modules/**'],

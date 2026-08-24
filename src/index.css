@@ -64,6 +64,9 @@
 
 .voucher-reader video { border-radius: 1rem; }
 .voucher-reader #qr-shaded-region { border-color: rgba(255, 255, 255, 0.75) !important; }
+.roulette-wheel > div,
+.roulette-wheel canvas { max-width: 100% !important; max-height: 100% !important; }
+.roulette-wheel canvas { width: 100% !important; height: auto !important; }
 
 /* ─── Tabelas responsivas: viram cards no mobile ─────────────── */
 @media (max-width: 639px) {
@@ -132,5 +135,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  .animate-fade-in, .animate-slide-up, .animate-shake, .animate-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
+@media (pointer: coarse) {
+  button, a, select, input[type='checkbox'] { min-height: 44px; }
 }

@@ -3,8 +3,9 @@ import { ChevronDown, ClipboardList, Search, UtensilsCrossed } from 'lucide-reac
 import { campaignAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import Spinner from '../../components/ui/Spinner'
+import { formatLocalDate } from '../../utils/helpers'
 
-const formatDate = (value) => new Intl.DateTimeFormat('pt-BR').format(new Date(value))
+const formatDate = formatLocalDate
 
 export default function EventVoucherHistoryPage() {
   const { toast } = useToast()
@@ -14,6 +15,7 @@ export default function EventVoucherHistoryPage() {
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(null)
   const [search, setSearch] = useState('')
+  const [campaignError, setCampaignError] = useState(false)
 
   const toggleExpand = async (voucher) => {
     if (expanded === voucher.id) { setExpanded(null); return }
@@ -27,11 +29,16 @@ export default function EventVoucherHistoryPage() {
   }
 
   const loadCampaigns = useCallback(async () => {
+    setCampaignError(false)
     try {
       const { data } = await campaignAPI.list()
       setCampaigns(data.data || [])
       if (data.data?.length) setCampaignId((id) => id ?? data.data[0].id)
-    } catch { /* sem campanhas */ }
+      else setLoading(false)
+    } catch {
+      setCampaignError(true)
+      setLoading(false)
+    }
   }, [])
 
   const loadVouchers = useCallback(async (id) => {
@@ -89,6 +96,12 @@ export default function EventVoucherHistoryPage() {
 
       {loading ? (
         <div className="card flex items-center justify-center py-20"><Spinner size={28} /></div>
+      ) : campaignError ? (
+        <section className="card text-center py-16">
+          <ClipboardList className="mx-auto text-ru-muted" size={38} />
+          <h2 className="font-display font-semibold text-xl mt-4">Não foi possível carregar as campanhas</h2>
+          <button className="btn-primary mt-5" onClick={loadCampaigns}>Tentar novamente</button>
+        </section>
       ) : filtered.length === 0 ? (
         <section className="card text-center py-16">
           <ClipboardList className="mx-auto text-ru-muted" size={38} />
@@ -100,21 +113,28 @@ export default function EventVoucherHistoryPage() {
           {filtered.map((v) => {
             const isOpen = expanded === v.id
             return (
-              <div key={v.id} className="card cursor-pointer" onClick={() => toggleExpand(v)}>
-                <div className="flex items-center justify-between">
+              <div key={v.id} className="card">
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onClick={() => toggleExpand(v)}
+                  aria-expanded={isOpen}
+                >
+                  <div className="flex items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-ru-charcoal truncate">{v.user_name}</p>
                     <p className="font-mono text-xs text-ru-muted">{v.code} · {v.user_cpf}</p>
                   </div>
                   <div className="flex items-center gap-4 shrink-0 ml-4">
                     <div className="text-right">
-                      <span className={`tag ${v.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                      <span className={`tag ${v.status === 'active' ? 'bg-emerald-50 text-emerald-800' : 'bg-ru-cream text-ru-charcoal'}`}>
                         {v.status === 'active' ? `${v.meals_used}/${v.total_meals}` : v.status}
                       </span>
                     </div>
                     <ChevronDown size={18} className={`text-ru-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </div>
-                </div>
+                  </div>
+                </button>
                 {isOpen && (
                   <div className="mt-4 pt-4 border-t border-ru-cream-dark">
                     <p className="text-sm text-ru-muted">Emitido em {formatDate(v.issued_at)}</p>

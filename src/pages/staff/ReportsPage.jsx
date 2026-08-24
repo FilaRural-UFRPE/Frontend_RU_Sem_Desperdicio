@@ -4,13 +4,14 @@ import { useToast } from '../../contexts/ToastContext'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { Download } from 'lucide-react'
 import Spinner from '../../components/ui/Spinner'
+import { localISODate } from '../../utils/helpers'
 
 // Gera últimos 7 dias para seleção rápida
 function lastNDays(n) {
   return Array.from({ length: n }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (n - 1 - i))
-    return d.toISOString().split('T')[0]
+    return localISODate(d)
   })
 }
 
@@ -18,7 +19,7 @@ export default function ReportsPage() {
   const [weekData, setWeekData] = useState([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(localISODate)
   const { toast } = useToast()
 
   useEffect(() => {

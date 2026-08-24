@@ -5,8 +5,9 @@ import api, { voucherAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import { fetchAndCachePublicKey, getCachedPublicKey, parseQRData, verifyVoucherSignature } from '../../utils/voucherCrypto'
 import { checkLocalUsage, getPendingUsages, removeLocalUsages, saveLocalUsage } from '../../utils/voucherDB'
+import { formatLocalDate } from '../../utils/helpers'
 
-const formatDate = (value) => new Intl.DateTimeFormat('pt-BR').format(new Date(value))
+const formatDate = formatLocalDate
 
 export default function VoucherValidatePage() {
   const { toast } = useToast()
