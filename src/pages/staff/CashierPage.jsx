@@ -22,13 +22,18 @@ export default function CashierPage() {
   const [voucher, setVoucher] = useState(null)
   const [scannedQr, setScannedQr] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [using, setUsing] = useState(false)
   const [usedToday, setUsedToday] = useState(false)
 
   const stopCamera = useCallback(async () => {
     const scanner = scannerRef.current
     scannerRef.current = null
     if (scanner?.isScanning) await scanner.stop().catch(() => {})
-    try { scanner?.clear() } catch { /* já desmontado */ }
+    try {
+      scanner?.clear()
+    } catch {
+      /* já desmontado */
+    }
     setCameraOn(false)
   }, [])
 
@@ -39,7 +44,11 @@ export default function CashierPage() {
     const scanner = new Html5Qrcode('evoucher-reader')
     scannerRef.current = scanner
     try {
-      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 240, height: 240 } }, onScan)
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        onScan
+      )
       setCameraOn(true)
     } catch {
       scannerRef.current = null
@@ -55,19 +64,28 @@ export default function CashierPage() {
     try {
       let publicKey = getCachedPublicKey()
       if (!publicKey) publicKey = await fetchAndCachePublicKey(api)
-      if (!(await verifyVoucherSignature(publicKey, parsed))) {
+      if (!(await verifyVoucherSignature(publicKey, parsed, api))) {
         throw new Error('Assinatura do QR code inválida')
       }
       if (new Date(parsed.e) <= new Date()) throw new Error('Voucher expirado')
       const { data } = await campaignAPI.getVoucher(parsed.id)
-      if (!data.success) { toast(data.msg, 'error'); return }
+      if (!data.success) {
+        toast(data.msg, 'error')
+        return
+      }
       if (data.data.user_cpf !== parsed.c) throw new Error('QR não pertence a este voucher')
       setVoucher(data.data)
       setScannedQr(parsed)
       const today = localISODate()
       setUsedToday(data.data.usages?.some((u) => u.meal_date === today))
     } catch (error) {
-      toast(error.response?.data?.msg || error.response?.data?.detail || error.message || 'Erro ao buscar voucher', 'error')
+      toast(
+        error.response?.data?.msg ||
+          error.response?.data?.detail ||
+          error.message ||
+          'Erro ao buscar voucher',
+        'error'
+      )
     } finally {
       setLoading(false)
     }
@@ -83,31 +101,54 @@ export default function CashierPage() {
     } catch (error) {
       toast(error.message || 'QR inválido', 'error')
     } finally {
-      window.setTimeout(() => { busyRef.current = false }, 800)
+      window.setTimeout(() => {
+        busyRef.current = false
+      }, 800)
     }
   }
 
   const useVoucher = async () => {
-    if (!voucher || !scannedQr || usedToday) return
+    if (!voucher || !scannedQr || usedToday || using) return
+    setUsing(true)
     try {
       const { data } = await campaignAPI.useVoucher(voucher.id, scannedQr.n, scannedQr.s)
-      if (!data.success) { toast(data.msg, 'error'); return }
-      toast(`${data.data.user_name} — almoço confirmado! (${data.data.meals_used}/${data.data.total_meals})`, 'success')
+      if (!data.success) {
+        toast(data.msg, 'error')
+        return
+      }
+      toast(
+        `${data.data.user_name} — almoço confirmado! (${data.data.meals_used}/${data.data.total_meals})`,
+        'success'
+      )
       setUsedToday(true)
-      setVoucher((current) => current ? { ...current, ...data.data } : current)
+      setVoucher((current) => (current ? { ...current, ...data.data } : current))
     } catch (error) {
-      toast(error.response?.data?.msg || error.response?.data?.detail || 'Erro ao registrar refeição', 'error')
+      toast(
+        error.response?.data?.msg || error.response?.data?.detail || 'Erro ao registrar refeição',
+        'error'
+      )
+    } finally {
+      setUsing(false)
     }
   }
 
-  useEffect(() => () => { stopCamera() }, [stopCamera])
+  useEffect(
+    () => () => {
+      stopCamera()
+    },
+    [stopCamera]
+  )
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <header>
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Caixa · RU Sem Desperdício</p>
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">
+          Caixa · RU Sem Desperdício
+        </p>
         <h1 className="font-display text-3xl md:text-4xl font-bold mt-2">Voucher de evento</h1>
-        <p className="text-ru-muted mt-2">Escaneie o QR do voucher de 5 almoços e confirme a refeição de hoje.</p>
+        <p className="text-ru-muted mt-2">
+          Escaneie o QR do voucher de 5 almoços e confirme a refeição de hoje.
+        </p>
       </header>
 
       <div className="grid lg:grid-cols-[1.25fr_.75fr] gap-6">
@@ -116,26 +157,56 @@ export default function CashierPage() {
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
               <Camera size={20} className="text-ru-blue" /> Leitor
             </h2>
-            {cameraOn && <button onClick={stopCamera} className="text-sm text-ru-muted hover:text-ru-charcoal">Fechar câmera</button>}
+            {cameraOn && (
+              <button onClick={stopCamera} className="text-sm text-ru-muted hover:text-ru-charcoal">
+                Fechar câmera
+              </button>
+            )}
           </div>
           <div className="relative mt-5 min-h-72 rounded-2xl bg-ru-charcoal overflow-hidden">
             <div id="evoucher-reader" className="voucher-reader" />
             {!cameraOn && (
               <div className="absolute inset-0 grid place-items-center">
-                <button onClick={startCamera} className="bg-white text-ru-blue px-5 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
+                <button
+                  onClick={startCamera}
+                  className="bg-white text-ru-blue px-5 py-3 rounded-xl font-semibold inline-flex items-center gap-2"
+                >
                   <Camera size={18} /> Abrir câmera
                 </button>
               </div>
             )}
           </div>
           <div className="mt-6 pt-6 border-t border-ru-cream-dark">
-            <label className="font-display font-semibold flex items-center gap-2" htmlFor="evoucher-code">
+            <label
+              className="font-display font-semibold flex items-center gap-2"
+              htmlFor="evoucher-code"
+            >
               <Keyboard size={18} className="text-ru-blue" /> Inserir código do QR
             </label>
             <p className="text-xs text-ru-muted mt-1">Use esta opção se a câmera não funcionar.</p>
             <div className="flex flex-col sm:flex-row gap-3 mt-3">
-              <input id="evoucher-code" className="input-field font-mono text-xs" value={manual} onChange={(e) => setManual(e.target.value)} placeholder='{"v":2,"id":1,…}' />
-              <button className="btn-primary shrink-0" onClick={async () => { try { const p = parseQRData(manual.trim()); if (p.v !== 2) throw new Error(''); await loadVoucher(p) } catch (error) { toast(error.message || 'QR inválido', 'error') } }} disabled={!manual.trim()}>Validar QR</button>
+              <input
+                id="evoucher-code"
+                className="input-field font-mono text-xs"
+                value={manual}
+                onChange={(e) => setManual(e.target.value)}
+                placeholder='{"v":2,"id":1,…}'
+              />
+              <button
+                className="btn-primary shrink-0"
+                onClick={async () => {
+                  try {
+                    const p = parseQRData(manual.trim())
+                    if (p.v !== 2) throw new Error('')
+                    await loadVoucher(p)
+                  } catch (error) {
+                    toast(error.message || 'QR inválido', 'error')
+                  }
+                }}
+                disabled={!manual.trim()}
+              >
+                Validar QR
+              </button>
             </div>
           </div>
         </section>
@@ -154,12 +225,16 @@ export default function CashierPage() {
                 <p className="font-mono text-xs text-ru-muted mt-1">{voucher.code}</p>
                 <div className="flex items-center justify-center gap-4 mt-5">
                   <div className="text-center">
-                    <p className="font-mono text-3xl font-bold text-ru-blue">{voucher.meals_used}</p>
+                    <p className="font-mono text-3xl font-bold text-ru-blue">
+                      {voucher.meals_used}
+                    </p>
                     <p className="text-xs text-ru-muted">usados</p>
                   </div>
                   <span className="text-ru-muted text-2xl">/</span>
                   <div className="text-center">
-                    <p className="font-mono text-3xl font-bold text-ru-charcoal">{voucher.total_meals}</p>
+                    <p className="font-mono text-3xl font-bold text-ru-charcoal">
+                      {voucher.total_meals}
+                    </p>
                     <p className="text-xs text-ru-muted">total</p>
                   </div>
                 </div>
@@ -171,10 +246,10 @@ export default function CashierPage() {
                       : 'bg-ru-blue text-white hover:bg-ru-blue-dark'
                   }`}
                   onClick={useVoucher}
-                  disabled={usedToday || voucher.meals_used >= voucher.total_meals}
+                  disabled={usedToday || using || voucher.meals_used >= voucher.total_meals}
                 >
                   <UtensilsCrossed size={18} />
-                  {usedToday ? 'Almoço já registrado hoje' : 'Comeu hoje!'}
+                  {using ? 'Registrando…' : usedToday ? 'Almoço já registrado hoje' : 'Comeu hoje!'}
                 </button>
               </section>
 
@@ -185,12 +260,17 @@ export default function CashierPage() {
                   </h3>
                   <div className="space-y-2">
                     {voucher.usages.map((u) => (
-                      <div key={u.id} className="flex items-center justify-between rounded-xl bg-ru-cream px-3 py-2 text-sm">
+                      <div
+                        key={u.id}
+                        className="flex items-center justify-between rounded-xl bg-ru-cream px-3 py-2 text-sm"
+                      >
                         <span className="flex items-center gap-2">
                           <UtensilsCrossed size={14} className="text-ru-muted" />
                           {formatDate(u.meal_date)}
                         </span>
-                        <span className="text-ru-muted">{u.meal_type === 'lunch' ? 'Almoço' : 'Jantar'}</span>
+                        <span className="text-ru-muted">
+                          {u.meal_type === 'lunch' ? 'Almoço' : 'Jantar'}
+                        </span>
                       </div>
                     ))}
                   </div>
