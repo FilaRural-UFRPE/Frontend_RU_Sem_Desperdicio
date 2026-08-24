@@ -2,8 +2,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { WheelCanvas } from 'react-custom-roulette'
 import { QRCodeCanvas } from 'qrcode.react'
 import {
-  Candy, CheckCircle2, ChevronDown, Gift, Printer, RefreshCw, Sparkles,
-  Trophy, Users, X, Zap,
+  Candy,
+  CheckCircle2,
+  ChevronDown,
+  Gift,
+  Printer,
+  RefreshCw,
+  Sparkles,
+  Trophy,
+  Users,
+  X,
+  Zap,
 } from 'lucide-react'
 import { campaignAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
@@ -36,6 +45,7 @@ export default function RoletaPage() {
 
   // Roleta
   const [mustSpin, setMustSpin] = useState(false)
+  const [spinning, setSpinning] = useState(false)
   const [prizeNumber, setPrizeNumber] = useState(0)
   const [pendingSpin, setPendingSpin] = useState(null)
   const [showResult, setShowResult] = useState(false)
@@ -46,34 +56,51 @@ export default function RoletaPage() {
   const [issuedVoucher, setIssuedVoucher] = useState(null)
 
   const loadCampaigns = useCallback(async () => {
-    const { data } = await campaignAPI.list()
-    setCampaigns(data.data || [])
-    if (data.data?.length) {
-      setCampaignId((current) => current ?? data.data[0].id)
-    } else {
-      setCampaignId(null)
-    }
-  }, [])
-
-  const loadCampaign = useCallback(async (id) => {
-    setLoading(true)
     try {
-      const { data } = await campaignAPI.get(id)
-      setCampaign(data.data)
-      const { data: part } = await campaignAPI.participants(id, true)
-      setParticipants(part.data || [])
-    } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao carregar campanha', 'error')
-    } finally {
-      setLoading(false)
+      const { data } = await campaignAPI.list()
+      setCampaigns(data.data || [])
+      if (data.data?.length) {
+        setCampaignId((current) => current ?? data.data[0].id)
+      } else {
+        setCampaignId(null)
+      }
+    } catch {
+      toast('Erro ao listar campanhas', 'error')
     }
   }, [toast])
 
-  useEffect(() => { loadCampaigns() }, [loadCampaigns])
+  const loadCampaign = useCallback(
+    async (id) => {
+      setLoading(true)
+      try {
+        const { data } = await campaignAPI.get(id)
+        setCampaign(data.data)
+        const { data: part } = await campaignAPI.participants(id, true)
+        setParticipants(part.data || [])
+      } catch (error) {
+        toast(
+          error.response?.data?.detail?.msg ||
+            error.response?.data?.msg ||
+            'Erro ao carregar campanha',
+          'error'
+        )
+      } finally {
+        setLoading(false)
+      }
+    },
+    [toast]
+  )
+
+  useEffect(() => {
+    loadCampaigns()
+  }, [loadCampaigns])
 
   useEffect(() => {
     if (campaignId) loadCampaign(campaignId)
-    else { setCampaign(null); setLoading(false) }
+    else {
+      setCampaign(null)
+      setLoading(false)
+    }
   }, [campaignId, loadCampaign])
 
   const segments = useMemo(() => {
@@ -99,22 +126,31 @@ export default function RoletaPage() {
 
   const totalRemaining = useMemo(
     () => (campaign?.prizes || []).reduce((sum, p) => sum + p.remaining, 0),
-    [campaign],
+    [campaign]
   )
 
   const winnerIndex = (prizeType) => segments.findIndex((s) => s.prizeType === prizeType)
 
   const handleSpin = async () => {
-    if (mustSpin) return
+    if (mustSpin || spinning) return
+    setSpinning(true)
     try {
       const { data } = await campaignAPI.spin(campaignId)
-      if (!data.success) { toast(data.msg, 'error'); return }
+      if (!data.success) {
+        toast(data.msg, 'error')
+        return
+      }
       setPendingSpin(data.data)
       const index = winnerIndex(data.data.prize_type)
       setPrizeNumber(index < 0 ? 0 : index)
       setMustSpin(true)
     } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao girar a roleta', 'error')
+      toast(
+        error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao girar a roleta',
+        'error'
+      )
+    } finally {
+      setSpinning(false)
     }
   }
 
@@ -125,35 +161,58 @@ export default function RoletaPage() {
 
   const confirmPrize = async () => {
     try {
-      await campaignAPI.confirmSpin(pendingSpin.spin_id)
+      const { data } = await campaignAPI.confirmSpin(pendingSpin.spin_id)
+      if (!data.success) {
+        toast(data.msg || 'Erro ao confirmar', 'error')
+        return
+      }
       toast(`${PRIZE_META[pendingSpin.prize_type].label} entregue!`, 'success')
       closeResult()
     } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao confirmar', 'error')
+      toast(
+        error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao confirmar',
+        'error'
+      )
     }
   }
 
   const cancelSpin = async () => {
     try {
-      await campaignAPI.cancelSpin(pendingSpin.spin_id)
+      const { data } = await campaignAPI.cancelSpin(pendingSpin.spin_id)
+      if (!data.success) {
+        toast(data.msg || 'Erro ao cancelar', 'error')
+        return
+      }
       toast('Giro cancelado e prêmio devolvido à roleta', 'warning')
       closeResult()
     } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao cancelar', 'error')
+      toast(
+        error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao cancelar',
+        'error'
+      )
     }
   }
 
   const registerVoucher = async () => {
     const cpf = voucherForm.user_cpf.replace(/\D/g, '')
-    if (cpf.length !== 11) { toast('CPF inválido', 'error'); return }
+    if (cpf.length !== 11) {
+      toast('CPF inválido', 'error')
+      return
+    }
     setRegistering(true)
     try {
       const { data } = await campaignAPI.registerVoucher(pendingSpin.spin_id, cpf)
-      if (!data.success) { toast(data.msg, 'error'); return }
+      if (!data.success) {
+        toast(data.msg, 'error')
+        return
+      }
       setIssuedVoucher(data.data.voucher)
       toast('Voucher gerado com QR code!', 'success')
     } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao gerar voucher', 'error')
+      toast(
+        error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao gerar voucher',
+        'error'
+      )
     } finally {
       setRegistering(false)
     }
@@ -174,7 +233,10 @@ export default function RoletaPage() {
       toast(`Presença recalculada: ${data.data?.eligible_count ?? 0} elegíveis`, 'success')
       await loadCampaign(campaignId)
     } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao recalcular', 'error')
+      toast(
+        error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao recalcular',
+        'error'
+      )
     } finally {
       setComputing(false)
     }
@@ -184,7 +246,9 @@ export default function RoletaPage() {
     const canvas = document.querySelector('#issued-qr canvas')
     if (!canvas) return
     const win = window.open('', '_blank')
-    win.document.write(`<img src="${canvas.toDataURL('image/png')}" style="width:100%;max-width:420px"/>`)
+    win.document.write(
+      `<img src="${canvas.toDataURL('image/png')}" style="width:100%;max-width:420px"/>`
+    )
     win.print()
   }
 
@@ -200,9 +264,15 @@ export default function RoletaPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Evento · RU Sem Desperdício</p>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-ru-charcoal mt-2">Roleta de prêmios</h1>
-          <p className="text-ru-muted mt-2">Gire presencialmente no dia do desafio e registre os vencedores.</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">
+            Evento · RU Sem Desperdício
+          </p>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-ru-charcoal mt-2">
+            Roleta de prêmios
+          </h1>
+          <p className="text-ru-muted mt-2">
+            Gire presencialmente no dia do desafio e registre os vencedores.
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -211,11 +281,21 @@ export default function RoletaPage() {
               onChange={(e) => setCampaignId(Number(e.target.value))}
               className="input-field pr-9 appearance-none"
             >
-              {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {campaigns.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-ru-muted pointer-events-none" />
+            <ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ru-muted pointer-events-none"
+            />
           </div>
-          <button className="btn-secondary inline-flex items-center gap-2" onClick={() => setShowSetup(true)}>
+          <button
+            className="btn-secondary inline-flex items-center gap-2"
+            onClick={() => setShowSetup(true)}
+          >
             <Sparkles size={16} /> Nova campanha
           </button>
         </div>
@@ -226,9 +306,13 @@ export default function RoletaPage() {
           <Trophy className="mx-auto text-ru-muted" size={38} />
           <h2 className="font-display font-semibold text-xl mt-4">Nenhuma campanha configurada</h2>
           <p className="text-ru-muted text-sm mt-2 max-w-md mx-auto">
-            Configure a campanha do evento definindo o dia do desafio, a janela de presença e as quantidades de prêmios.
+            Configure a campanha do evento definindo o dia do desafio, a janela de presença e as
+            quantidades de prêmios.
           </p>
-          <button className="btn-primary mt-6 inline-flex items-center gap-2" onClick={() => setShowSetup(true)}>
+          <button
+            className="btn-primary mt-6 inline-flex items-center gap-2"
+            onClick={() => setShowSetup(true)}
+          >
             <Sparkles size={17} /> Criar campanha
           </button>
         </section>
@@ -237,18 +321,30 @@ export default function RoletaPage() {
           <section className="card grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Stat label="Dia do desafio" value={formatDate(campaign.event_date)} />
             <Stat label="Janela de presença" value={`últimos ${campaign.days_lookback} dias`} />
-            <Stat label="Elegíveis (nota)" value={`${campaign.eligible_count ?? 0} participantes`} />
+            <Stat
+              label="Elegíveis (nota)"
+              value={`${campaign.eligible_count ?? 0} participantes`}
+            />
             <Stat label="Giros realizados" value={`${campaign.spins_count ?? 0}`} />
           </section>
 
           <section className="card">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
               <div>
-                <h2 className="font-display font-semibold text-lg text-ru-charcoal">Estoque de prêmios</h2>
-                <p className="text-xs text-ru-muted mt-1">Quando um prêmio esgota, ele sai da roleta e os espaços são redistribuídos.</p>
+                <h2 className="font-display font-semibold text-lg text-ru-charcoal">
+                  Estoque de prêmios
+                </h2>
+                <p className="text-xs text-ru-muted mt-1">
+                  Quando um prêmio esgota, ele sai da roleta e os espaços são redistribuídos.
+                </p>
               </div>
-              <button className="btn-secondary inline-flex items-center gap-2 text-sm" onClick={recompute} disabled={computing}>
-                <RefreshCw size={15} className={computing ? 'animate-spin' : ''} /> Recalcular presença
+              <button
+                className="btn-secondary inline-flex items-center gap-2 text-sm"
+                onClick={recompute}
+                disabled={computing}
+              >
+                <RefreshCw size={15} className={computing ? 'animate-spin' : ''} /> Recalcular
+                presença
               </button>
             </div>
             <div className="grid sm:grid-cols-3 gap-3">
@@ -258,18 +354,29 @@ export default function RoletaPage() {
                 const Icon = meta.icon
                 const pct = prize ? Math.round((prize.remaining / prize.total) * 100) : 0
                 return (
-                  <div key={type} className={`rounded-2xl border p-4 ${prize?.remaining ? 'border-ru-cream-dark bg-ru-cream/40' : 'border-red-200 bg-red-50 opacity-60'}`}>
+                  <div
+                    key={type}
+                    className={`rounded-2xl border p-4 ${prize?.remaining ? 'border-ru-cream-dark bg-ru-cream/40' : 'border-red-200 bg-red-50 opacity-60'}`}
+                  >
                     <div className="flex items-center gap-3">
-                      <span className="w-10 h-10 rounded-xl grid place-items-center text-white" style={{ backgroundColor: meta.color }}>
+                      <span
+                        className="w-10 h-10 rounded-xl grid place-items-center text-white"
+                        style={{ backgroundColor: meta.color }}
+                      >
                         <Icon size={18} />
                       </span>
                       <div>
                         <p className="font-display font-semibold text-ru-charcoal">{meta.label}</p>
-                        <p className="text-xs text-ru-muted">{prize?.remaining ?? 0} / {prize?.total ?? 0} restantes</p>
+                        <p className="text-xs text-ru-muted">
+                          {prize?.remaining ?? 0} / {prize?.total ?? 0} restantes
+                        </p>
                       </div>
                     </div>
                     <div className="h-2 rounded-full bg-ru-cream-dark mt-4 overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: meta.color }} />
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, backgroundColor: meta.color }}
+                      />
                     </div>
                   </div>
                 )
@@ -279,7 +386,9 @@ export default function RoletaPage() {
 
           <section className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
             <div className="card flex flex-col items-center">
-              <h2 className="font-display font-semibold text-lg text-ru-charcoal mb-4 self-start">Rode a roleta</h2>
+              <h2 className="font-display font-semibold text-lg text-ru-charcoal mb-4 self-start">
+                Rode a roleta
+              </h2>
 
               <div className="roulette-wheel relative w-full max-w-[480px] aspect-square overflow-hidden">
                 {segments.length > 0 && (
@@ -311,16 +420,19 @@ export default function RoletaPage() {
                   </div>
                 )}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-ru-blue text-white grid place-items-center shadow-lg border-4 border-white pointer-events-none z-10">
-                  <span className="font-display font-bold text-sm leading-tight text-center">Smart RU</span>
+                  <span className="font-display font-bold text-sm leading-tight text-center">
+                    Smart RU
+                  </span>
                 </div>
               </div>
 
               <button
                 className="btn-primary mt-6 px-10 py-3 text-lg font-display font-bold inline-flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSpin}
-                disabled={mustSpin || totalRemaining === 0}
+                disabled={mustSpin || spinning || totalRemaining === 0}
               >
-                <Sparkles size={20} /> {mustSpin ? 'Girando...' : 'GIRAR ROLETA'}
+                <Sparkles size={20} />{' '}
+                {mustSpin ? 'Girando...' : spinning ? 'Sorteando...' : 'GIRAR ROLETA'}
               </button>
             </div>
 
@@ -332,15 +444,24 @@ export default function RoletaPage() {
                   </h3>
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
-                  {participants.length === 0 && <p className="text-sm text-ru-muted">Nenhum participante com {campaign.required_days} dias de presença ainda.</p>}
+                  {participants.length === 0 && (
+                    <p className="text-sm text-ru-muted">
+                      Nenhum participante com {campaign.required_days} dias de presença ainda.
+                    </p>
+                  )}
                   {participants.map((p) => (
-                    <div key={p.user_cpf} className="flex items-center justify-between rounded-xl bg-ru-cream px-3 py-2">
+                    <div
+                      key={p.user_cpf}
+                      className="flex items-center justify-between rounded-xl bg-ru-cream px-3 py-2"
+                    >
                       <div className="min-w-0">
                         <p className="font-medium text-sm text-ru-charcoal truncate">{p.name}</p>
                         <p className="font-mono text-[11px] text-ru-muted">{p.user_cpf}</p>
                       </div>
                       <div className="text-right shrink-0 ml-2">
-                        <p className="font-mono text-xs font-semibold text-ru-blue">{p.presence_days}d</p>
+                        <p className="font-mono text-xs font-semibold text-ru-blue">
+                          {p.presence_days}d
+                        </p>
                         <p className="font-mono text-[11px] text-ru-muted">{p.points} pts</p>
                       </div>
                     </div>
@@ -357,7 +478,10 @@ export default function RoletaPage() {
                     <div key={s.id} className="flex items-center justify-between text-sm">
                       <span className="text-ru-charcoal truncate">{s.user_name || '—'}</span>
                       <span className="flex items-center gap-1.5 shrink-0">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PRIZE_META[s.prize_type]?.color }} />
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: PRIZE_META[s.prize_type]?.color }}
+                        />
                         <span className="text-ru-muted">{PRIZE_META[s.prize_type]?.label}</span>
                       </span>
                     </div>
@@ -369,7 +493,15 @@ export default function RoletaPage() {
         </>
       )}
 
-      {showSetup && <CampaignSetup onClose={() => setShowSetup(false)} onCreated={(id) => { setShowSetup(false); setCampaignId(id) }} />}
+      {showSetup && (
+        <CampaignSetup
+          onClose={() => setShowSetup(false)}
+          onCreated={(id) => {
+            setShowSetup(false)
+            setCampaignId(id)
+          }}
+        />
+      )}
 
       {showResult && pendingSpin && !issuedVoucher && (
         <ResultModal
@@ -380,7 +512,9 @@ export default function RoletaPage() {
         >
           {pendingSpin.prize_type === 'voucher' && (
             <div>
-              <label className="block text-sm font-medium text-ru-charcoal mb-1">CPF do participante vencedor</label>
+              <label className="block text-sm font-medium text-ru-charcoal mb-1">
+                CPF do participante vencedor
+              </label>
               <input
                 className="input-field"
                 inputMode="numeric"
@@ -388,7 +522,11 @@ export default function RoletaPage() {
                 value={voucherForm.user_cpf}
                 onChange={(e) => setVoucherForm({ user_cpf: e.target.value })}
               />
-              <button className="btn-primary w-full mt-4" onClick={registerVoucher} disabled={registering}>
+              <button
+                className="btn-primary w-full mt-4"
+                onClick={registerVoucher}
+                disabled={registering}
+              >
                 {registering ? 'Gerando...' : 'Gerar QR code do voucher'}
               </button>
             </div>
@@ -397,24 +535,52 @@ export default function RoletaPage() {
       )}
 
       {issuedVoucher && (
-        <Modal open onClose={() => { setIssuedVoucher(null); closeResult() }} title="Voucher gerado">
+        <Modal
+          open
+          onClose={() => {
+            setIssuedVoucher(null)
+            closeResult()
+          }}
+          title="Voucher gerado"
+        >
           <div className="text-center">
             <p className="flex items-center justify-center gap-2 text-green-600 font-medium">
               <CheckCircle2 size={18} /> Voucher de 5 almoços liberado
             </p>
-            <div className="my-5 inline-block bg-white border-2 border-dashed border-ru-blue/30 rounded-2xl p-5" id="issued-qr">
+            <div
+              className="my-5 inline-block bg-white border-2 border-dashed border-ru-blue/30 rounded-2xl p-5"
+              id="issued-qr"
+            >
               <QRCodeCanvas value={issuedVoucher.qr_data} size={220} level="M" marginSize={1} />
-              <p className="font-mono text-[10px] tracking-widest uppercase mt-3 text-ru-muted">SmartRU · evento {issuedVoucher.code}</p>
+              <p className="font-mono text-[10px] tracking-widest uppercase mt-3 text-ru-muted">
+                SmartRU · evento {issuedVoucher.code}
+              </p>
             </div>
             <div className="flex items-center justify-center gap-6 text-left text-sm bg-ru-cream rounded-2xl p-4">
-              <div><p className="text-ru-muted text-xs">Titular</p><p className="font-semibold text-ru-charcoal">{issuedVoucher.user_name}</p></div>
-              <div><p className="text-ru-muted text-xs">Almoços</p><p className="font-semibold text-ru-charcoal">{issuedVoucher.total_meals}</p></div>
-              <div><p className="text-ru-muted text-xs">Válido até</p><p className="font-semibold text-ru-charcoal">{formatDate(issuedVoucher.expires_at)}</p></div>
+              <div>
+                <p className="text-ru-muted text-xs">Titular</p>
+                <p className="font-semibold text-ru-charcoal">{issuedVoucher.user_name}</p>
+              </div>
+              <div>
+                <p className="text-ru-muted text-xs">Almoços</p>
+                <p className="font-semibold text-ru-charcoal">{issuedVoucher.total_meals}</p>
+              </div>
+              <div>
+                <p className="text-ru-muted text-xs">Válido até</p>
+                <p className="font-semibold text-ru-charcoal">
+                  {formatDate(issuedVoucher.expires_at)}
+                </p>
+              </div>
             </div>
-            <button className="btn-secondary mt-5 inline-flex items-center gap-2 w-full justify-center" onClick={printQr}>
+            <button
+              className="btn-secondary mt-5 inline-flex items-center gap-2 w-full justify-center"
+              onClick={printQr}
+            >
               <Printer size={17} /> Imprimir QR code
             </button>
-            <button className="btn-primary mt-2 w-full" onClick={() => closeResult()}>Concluir</button>
+            <button className="btn-primary mt-2 w-full" onClick={() => closeResult()}>
+              Concluir
+            </button>
           </div>
         </Modal>
       )}
@@ -437,23 +603,38 @@ function ResultModal({ prizeType, children, onConfirm, onCancel, onClose }) {
   return (
     <Modal open onClose={onClose} title="Resultado do giro">
       <div className="text-center">
-        <div className="mx-auto w-16 h-16 rounded-2xl grid place-items-center text-white shadow-lg" style={{ backgroundColor: meta.color }}>
+        <div
+          className="mx-auto w-16 h-16 rounded-2xl grid place-items-center text-white shadow-lg"
+          style={{ backgroundColor: meta.color }}
+        >
           <Icon size={30} />
         </div>
-        <h3 className="font-display text-2xl font-bold text-ru-charcoal mt-4">Ganhou {meta.label}!</h3>
+        <h3 className="font-display text-2xl font-bold text-ru-charcoal mt-4">
+          Ganhou {meta.label}!
+        </h3>
         {prizeType === 'voucher' ? (
           <>
-            <p className="text-sm text-ru-muted mt-2">Preencha os dados do participante para gerar o QR code de 5 almoços no RU.</p>
+            <p className="text-sm text-ru-muted mt-2">
+              Preencha os dados do participante para gerar o QR code de 5 almoços no RU.
+            </p>
             <div className="mt-5">{children}</div>
           </>
         ) : (
           <>
-            <p className="text-sm text-ru-muted mt-2">Entregue o prêmio ao participante e confirme abaixo.</p>
+            <p className="text-sm text-ru-muted mt-2">
+              Entregue o prêmio ao participante e confirme abaixo.
+            </p>
             <div className="flex gap-3 mt-5">
-              <button className="btn-secondary flex-1 inline-flex items-center justify-center gap-2" onClick={onCancel}>
+              <button
+                className="btn-secondary flex-1 inline-flex items-center justify-center gap-2"
+                onClick={onCancel}
+              >
                 <X size={16} /> Cancelar
               </button>
-              <button className="btn-primary flex-1 inline-flex items-center justify-center gap-2" onClick={onConfirm}>
+              <button
+                className="btn-primary flex-1 inline-flex items-center justify-center gap-2"
+                onClick={onConfirm}
+              >
                 <CheckCircle2 size={16} /> Entreguei
               </button>
             </div>
@@ -480,7 +661,10 @@ function CampaignSetup({ onClose, onCreated }) {
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
   const submit = async () => {
-    if (!form.name.trim()) { toast('Informe o nome da campanha', 'error'); return }
+    if (!form.name.trim()) {
+      toast('Informe o nome da campanha', 'error')
+      return
+    }
     setSaving(true)
     try {
       const { data } = await campaignAPI.create({
@@ -488,13 +672,23 @@ function CampaignSetup({ onClose, onCreated }) {
         event_date: form.event_date,
         days_lookback: Number(form.days_lookback),
         required_days: Number(form.required_days),
-        prizes: { voucher: Number(form.voucher), redbull: Number(form.redbull), candy: Number(form.candy) },
+        prizes: {
+          voucher: Number(form.voucher),
+          redbull: Number(form.redbull),
+          candy: Number(form.candy),
+        },
       })
-      if (!data.success) { toast(data.msg, 'error'); return }
+      if (!data.success) {
+        toast(data.msg, 'error')
+        return
+      }
       toast('Campanha criada e presença calculada!', 'success')
       onCreated(data.data.id)
     } catch (error) {
-      toast(error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao criar campanha', 'error')
+      toast(
+        error.response?.data?.detail?.msg || error.response?.data?.msg || 'Erro ao criar campanha',
+        'error'
+      )
     } finally {
       setSaving(false)
     }
@@ -512,16 +706,35 @@ function CampaignSetup({ onClose, onCreated }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={label}>Dia do desafio</label>
-            <input type="date" className="input-field" value={form.event_date} onChange={set('event_date')} />
+            <input
+              type="date"
+              className="input-field"
+              value={form.event_date}
+              onChange={set('event_date')}
+            />
           </div>
           <div>
             <label className={label}>Dias para a nota</label>
-            <input type="number" min="1" max="30" className="input-field" value={form.required_days} onChange={set('required_days')} />
+            <input
+              type="number"
+              min="1"
+              max="30"
+              className="input-field"
+              value={form.required_days}
+              onChange={set('required_days')}
+            />
           </div>
         </div>
         <div>
           <label className={label}>Janela de presença (dias antes do evento)</label>
-          <input type="number" min="1" max="60" className="input-field" value={form.days_lookback} onChange={set('days_lookback')} />
+          <input
+            type="number"
+            min="1"
+            max="60"
+            className="input-field"
+            value={form.days_lookback}
+            onChange={set('days_lookback')}
+          />
         </div>
 
         <div className="rounded-2xl bg-ru-cream p-4">
@@ -534,9 +747,18 @@ function CampaignSetup({ onClose, onCreated }) {
             ].map(([key, labelText, Icon, color]) => (
               <div key={key}>
                 <label className={label}>
-                  <span className="inline-flex items-center gap-1"><Icon size={14} style={{ color }} /> {labelText}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Icon size={14} style={{ color }} /> {labelText}
+                  </span>
                 </label>
-                <input type="number" min="0" max="100" className="input-field" value={form[key]} onChange={set(key)} />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="input-field"
+                  value={form[key]}
+                  onChange={set(key)}
+                />
               </div>
             ))}
           </div>
