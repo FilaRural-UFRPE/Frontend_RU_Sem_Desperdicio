@@ -26,6 +26,10 @@ import ReportsPage from './pages/staff/ReportsPage'
 import MenuUploadPage from './pages/staff/MenuUploadPage' // ✅ adicionado
 import VoucherValidatePage from './pages/staff/VoucherValidatePage'
 import VoucherGeneratePage from './pages/staff/VoucherGeneratePage'
+import RoletaPage from './pages/staff/RoletaPage'
+import CashierPage from './pages/staff/CashierPage'
+import EventVoucherHistoryPage from './pages/staff/EventVoucherHistoryPage'
+import AnnouncementsPage from './pages/staff/AnnouncementsPage'
 
 // Ranking / Leaderboard
 import RankingPage from './pages/ranking/RankingPage'
@@ -158,6 +162,42 @@ export default function App() {
               element={
                 <ProtectedRoute allowedTypes={['funcionario']}>
                   <AppLayout><VoucherGeneratePage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Roleta da campanha RU Sem Desperdício */}
+            <Route
+              path="/roleta"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><RoletaPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Caixa do evento: confirmação de refeições dos vouchers */}
+            <Route
+              path="/voucher/caixa"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><CashierPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Histórico de vouchers de evento */}
+            <Route
+              path="/voucher/evento-historico"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><EventVoucherHistoryPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Avisos administrativos → e-mail dos cadastrados */}
+            <Route
+              path="/avisos"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><AnnouncementsPage /></AppLayout>
                 </ProtectedRoute>
               }
             />
