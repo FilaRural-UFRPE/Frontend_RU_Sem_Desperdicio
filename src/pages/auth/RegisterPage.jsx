@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext'
 import FormInput from '../../components/ui/FormInput'
 import Spinner from '../../components/ui/Spinner'
 import Logo from '../../components/ui/Logo'
-import { maskCPF, validateCPF, getErrorMessage } from '../../utils/helpers'
+import { maskCPF, validateCPF, getErrorMessage, passwordStrength } from '../../utils/helpers'
 import { User, Mail, CreditCard, Lock, GraduationCap, MapPin } from 'lucide-react'
 
 // Funcionário removido do cadastro público conforme instrução do backend
@@ -18,19 +18,6 @@ const ACADEMIC_UNITS = [
   { value: 'sede', label: 'Sede (Dois Irmãos)' },
   { value: 'uast', label: 'UAST (Serra Talhada)' },
 ]
-
-function passwordStrength(pw) {
-  if (!pw) return { level: 0, label: '', color: '' }
-  let score = 0
-  if (pw.length >= 8) score++
-  if (pw.length >= 12) score++
-  if (/[A-Z]/.test(pw)) score++
-  if (/[0-9]/.test(pw)) score++
-  if (/[^a-zA-Z0-9]/.test(pw)) score++
-  if (score <= 2) return { level: 1, label: 'Fraca', color: 'bg-red-500' }
-  if (score <= 3) return { level: 2, label: 'Média', color: 'bg-amber-500' }
-  return { level: 3, label: 'Forte', color: 'bg-emerald-500' }
-}
 
 export default function RegisterPage() {
   const [type, setType] = useState('estudante')

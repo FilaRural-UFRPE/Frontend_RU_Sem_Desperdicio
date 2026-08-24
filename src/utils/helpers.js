@@ -51,6 +51,33 @@ export function userTypeLabel(type) {
   return map[type] ?? type
 }
 
+export function passwordStrength(pw) {
+  if (!pw) return { level: 0, label: '', color: '' }
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+  if (score <= 2) return { level: 1, label: 'Fraca', color: 'bg-red-500' }
+  if (score <= 3) return { level: 2, label: 'Média', color: 'bg-amber-500' }
+  return { level: 3, label: 'Forte', color: 'bg-emerald-500' }
+}
+
+export function toBRDate(dateStr) {
+  if (!dateStr) return ''
+  if (dateStr.includes('/')) return dateStr
+  const [y, m, d] = dateStr.split('-')
+  return `${d}/${m}/${y}`
+}
+
+export const MEAL_TYPE_LABELS = {
+  select: '👑 Select',
+  leve_sabor: '🥗 Leve Sabor',
+  essencial: '🍱 Essencial',
+  vegetariano: '🌿 Vegetariano',
+}
+
 export function getErrorMessage(err) {
   const data = err?.response?.data
   const status = err?.response?.status

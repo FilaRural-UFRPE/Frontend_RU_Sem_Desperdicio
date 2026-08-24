@@ -3,20 +3,9 @@ import { scheduleAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 import Spinner from '../../components/ui/Spinner'
 import { RefreshCw, Search, CheckCircle } from 'lucide-react'
+import { toBRDate, MEAL_TYPE_LABELS } from '../../utils/helpers'
 
 const todayStr = new Date().toISOString().split('T')[0]
-
-const MEAL_TYPE_LABELS = {
-  select: '👑 Select',
-  leve_sabor: '🥗 Leve Sabor',
-  essencial: '🍱 Essencial',
-  vegetariano: '🌿 Vegetariano',
-}
-
-function toBRDate(dateStr) {
-  const [y, m, d] = dateStr.split('-')
-  return `${d}/${m}/${y}`
-}
 
 export default function AllSchedulesPage() {
   const [schedules, setSchedules] = useState([])

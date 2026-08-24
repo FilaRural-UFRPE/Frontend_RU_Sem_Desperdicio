@@ -2,19 +2,12 @@ import { useState, useEffect } from 'react'
 import { scheduleAPI } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { getErrorMessage } from '../../utils/helpers'
+import { getErrorMessage, MEAL_TYPE_LABELS } from '../../utils/helpers'
 import Modal from '../../components/ui/Modal'
 import Spinner from '../../components/ui/Spinner'
 import { RefreshCw, X } from 'lucide-react'
 
 const today = new Date().toISOString().split('T')[0]
-
-const MEAL_TYPE_LABELS = {
-  select: '👑 Select',
-  leve_sabor: '🥗 Leve Sabor',
-  essencial: '🍱 Essencial',
-  vegetariano: '🌿 Vegetariano',
-}
 
 const MEAL_TYPES = [
   { value: 'select', emoji: '👑', label: 'Select' },

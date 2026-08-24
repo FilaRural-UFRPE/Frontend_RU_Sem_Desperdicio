@@ -12,16 +12,12 @@ import {
   Clock, CalendarDays, UserX, Activity,
 } from 'lucide-react'
 import Spinner from '../../components/ui/Spinner'
+import { toBRDate } from '../../utils/helpers'
 
 const AI_URL = 'https://desperdicio-ia.onrender.com'
 
 const today = new Date()
 const todayStr = today.toISOString().split('T')[0]
-
-function toBRDate(dateStr) {
-  const [y, m, d] = dateStr.split('-')
-  return `${d}/${m}/${y}`
-}
 
 function formatShortDate(dateStr) {
   const [, m, d] = dateStr.split('-')

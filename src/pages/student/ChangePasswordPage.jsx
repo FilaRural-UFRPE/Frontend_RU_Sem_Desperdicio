@@ -2,23 +2,10 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { userAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
-import { getErrorMessage, maskCPF } from '../../utils/helpers'
+import { getErrorMessage, maskCPF, passwordStrength } from '../../utils/helpers'
 import FormInput from '../../components/ui/FormInput'
 import Spinner from '../../components/ui/Spinner'
 import { Lock, CheckCircle } from 'lucide-react'
-
-function passwordStrength(pw) {
-  if (!pw) return { level: 0, label: '', color: '' }
-  let score = 0
-  if (pw.length >= 8) score++
-  if (pw.length >= 12) score++
-  if (/[A-Z]/.test(pw)) score++
-  if (/[0-9]/.test(pw)) score++
-  if (/[^a-zA-Z0-9]/.test(pw)) score++
-  if (score <= 2) return { level: 1, label: 'Fraca', color: 'bg-red-500' }
-  if (score <= 3) return { level: 2, label: 'Média', color: 'bg-amber-500' }
-  return { level: 3, label: 'Forte', color: 'bg-emerald-500' }
-}
 
 export default function ChangePasswordPage() {
   const { user } = useAuth()

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { toBRDate } from '../utils/helpers'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://semdesperdicio.smartru.com.br/api',
@@ -129,13 +130,6 @@ export const voucherAPI = {
 }
 
 // ─── Relatórios ───────────────────────────────────────
-function toBRDate(dateStr) {
-  if (!dateStr) return ''
-  if (dateStr.includes('/')) return dateStr
-  const [y, m, d] = dateStr.split('-')
-  return `${d}/${m}/${y}`
-}
-
 export const reportAPI = {
   demand: (date) => {
     const brDate = toBRDate(date)
