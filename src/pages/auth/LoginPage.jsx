@@ -44,7 +44,13 @@ export default function LoginPage() {
       toast(`Bem-vindo(a), ${user.name.split(' ')[0]}! 👋`)
       navigate('/dashboard')
     } catch (err) {
-      setErrors({ form: 'CPF ou senha incorretos. Tente novamente.' })
+      const status = err.response?.status
+      const serverMsg = err.response?.data?.message || err.response?.data?.msg
+      if (status === 429) {
+        setErrors({ form: serverMsg || 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' })
+      } else {
+        setErrors({ form: 'CPF ou senha incorretos. Tente novamente.' })
+      }
     } finally {
       setLoading(false)
     }
