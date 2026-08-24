@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { scheduleAPI } from '../../services/api'
-import { Calendar, History, User, Clock, CheckCircle, Utensils } from 'lucide-react'
+import { Calendar, History, User, Clock, CheckCircle, Utensils, Users } from 'lucide-react'
 
 // Prioriza o filarural-backend (colaborativo + visao com fallback).
 // Enquanto o backend nao estiver no ar, cai direto na visao computacional.
@@ -74,7 +74,7 @@ function QueueStatusCard() {
 
   if (loading) {
     return (
-      <div className="card flex items-center justify-center py-4 mb-6">
+      <div className="card flex items-center justify-center py-4 mb-3">
         <div className="w-5 h-5 border-2 border-ru-blue border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -87,7 +87,7 @@ function QueueStatusCard() {
   const info = QUEUE_STATUS_MAP[queue.status] || QUEUE_STATUS_MAP.média
 
   return (
-    <div className={`card ${info.bg} border-2 border-transparent mb-6`}>
+    <div className={`card ${info.bg} border-2 border-transparent mb-3`}>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
           <Utensils size={18} className={info.color} />
@@ -144,6 +144,19 @@ export default function StudentDashboard() {
       </div>
 
       <QueueStatusCard />
+
+      <Link
+        to="/colaborar"
+        className="card mb-6 flex items-center gap-3 hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue"
+      >
+        <div className="w-10 h-10 bg-ru-blue/10 rounded-xl flex items-center justify-center group-hover:bg-ru-blue transition-colors">
+          <Users size={18} className="text-ru-blue group-hover:text-white transition-colors" />
+        </div>
+        <div className="flex-1">
+          <p className="font-display font-semibold text-ru-charcoal text-sm">Está na fila agora?</p>
+          <p className="text-xs text-ru-muted font-body mt-0.5">Colabore e ajude outros estudantes a se planejarem</p>
+        </div>
+      </Link>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
         <Link to="/agendar" className="card hover:shadow-md transition-shadow cursor-pointer group border-2 hover:border-ru-blue">

@@ -18,6 +18,7 @@ import ProfilePage from './pages/student/ProfilePage'
 import ChangePasswordPage from './pages/student/ChangePasswordPage'
 import MenuPage from './pages/student/MenuPage'
 import VoucherPage from './pages/student/VoucherPage'
+import QueueCollaboratePage from './pages/student/QueueCollaboratePage'
 
 // Páginas exclusivas do funcionário
 import AllSchedulesPage from './pages/staff/AllSchedulesPage'
@@ -98,6 +99,15 @@ export default function App() {
               element={
                 <ProtectedRoute allowedTypes={['estudante', 'convidado']}>
                   <AppLayout><VoucherPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Colaborar com o status da fila (FilaRural) */}
+            <Route
+              path="/colaborar"
+              element={
+                <ProtectedRoute>
+                  <AppLayout><QueueCollaboratePage /></AppLayout>
                 </ProtectedRoute>
               }
             />
