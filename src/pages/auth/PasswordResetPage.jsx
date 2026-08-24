@@ -56,9 +56,7 @@ export default function PasswordResetPage() {
 
         <div className="card">
           <h2 className="font-display font-bold text-xl text-ru-charcoal mb-1">Nova senha</h2>
-          <p className="text-ru-muted text-sm font-body mb-6">
-            Define a tua nova senha de acesso.
-          </p>
+          <p className="text-ru-muted text-sm font-body mb-6">Define a tua nova senha de acesso.</p>
 
           {errors.token && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
@@ -80,11 +78,24 @@ export default function PasswordResetPage() {
               {newPassword && (
                 <div className="mt-2">
                   <div className="flex gap-1 mb-1">
-                    {[1,2,3].map(i => (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= strength.level ? strength.color : 'bg-gray-200'}`} />
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${i <= strength.level ? strength.color : 'bg-gray-200'}`}
+                      />
                     ))}
                   </div>
-                  <p className="text-xs font-body" style={{color: strength.level === 1 ? '#ef4444' : strength.level === 2 ? '#d97706' : '#059669'}}>
+                  <p
+                    className="text-xs font-body"
+                    style={{
+                      color:
+                        strength.level === 1
+                          ? '#ef4444'
+                          : strength.level === 2
+                            ? '#d97706'
+                            : '#059669',
+                    }}
+                  >
                     Força: {strength.label}
                   </p>
                 </div>
@@ -100,13 +111,19 @@ export default function PasswordResetPage() {
               error={errors.confirmPassword}
             />
 
-            <button type="submit" disabled={loading} className="btn-primary mt-2 flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary mt-2 flex items-center justify-center gap-2"
+            >
               {loading ? <Spinner size={18} /> : 'Redefinir senha'}
             </button>
           </form>
 
           <p className="text-center text-sm font-body text-ru-muted mt-5">
-            <Link to="/login" className="text-ru-blue font-medium hover:underline">Voltar ao login</Link>
+            <Link to="/login" className="text-ru-blue font-medium hover:underline">
+              Voltar ao login
+            </Link>
           </p>
         </div>
       </div>

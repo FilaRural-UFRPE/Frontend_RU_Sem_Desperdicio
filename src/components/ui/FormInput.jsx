@@ -8,14 +8,13 @@ export default function FormInput({ label, error, icon: Icon, type, ...props }) 
 
   return (
     <div className="flex flex-col gap-1.5">
-      {label && (
-        <label className="text-sm font-body font-medium text-ru-charcoal">
-          {label}
-        </label>
-      )}
+      {label && <label className="text-sm font-body font-medium text-ru-charcoal">{label}</label>}
       <div className="relative">
         {Icon && (
-          <Icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ru-muted pointer-events-none" />
+          <Icon
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ru-muted pointer-events-none"
+          />
         )}
         <input
           type={inputType}

@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
-  validateCPF, formatDate, toBRDate, passwordStrength, MEAL_TYPE_LABELS,
-  formatLocalDate, localISODate,
+  validateCPF,
+  formatDate,
+  toBRDate,
+  passwordStrength,
+  MEAL_TYPE_LABELS,
+  formatLocalDate,
+  localISODate,
 } from './helpers'
 
 describe('validateCPF', () => {

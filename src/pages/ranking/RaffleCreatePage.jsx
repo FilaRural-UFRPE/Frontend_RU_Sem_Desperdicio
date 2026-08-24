@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Shuffle, Trophy, Users, AlertCircle, RefreshCw, CheckCircle2, Calendar } from 'lucide-react'
+import {
+  Shuffle,
+  Trophy,
+  Users,
+  AlertCircle,
+  RefreshCw,
+  CheckCircle2,
+  Calendar,
+} from 'lucide-react'
 import { rankingAPI } from '../../services/api'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -50,7 +58,9 @@ export default function RaffleCreatePage() {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -77,10 +87,15 @@ export default function RaffleCreatePage() {
     try {
       const res = await rankingAPI.raffleDraw(raffleId)
       const result = res.data
-      toast(`Sorteio realizado! ${result.winners.length} vencedor(es) de ${result.total_participants} participantes.`)
+      toast(
+        `Sorteio realizado! ${result.winners.length} vencedor(es) de ${result.total_participants} participantes.`
+      )
       await load()
     } catch (err) {
-      toast(err.response?.data?.detail?.msg || err.response?.data?.error || 'Erro ao sortear', 'error')
+      toast(
+        err.response?.data?.detail?.msg || err.response?.data?.error || 'Erro ao sortear',
+        'error'
+      )
     } finally {
       setDrawing(null)
     }
@@ -89,13 +104,19 @@ export default function RaffleCreatePage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <header>
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Staff · Sorteios</p>
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">
+          Staff · Sorteios
+        </p>
         <h1 className="font-display text-3xl md:text-4xl font-bold mt-2">Gerenciar sorteios</h1>
-        <p className="text-ru-muted mt-2">Crie sorteios com período configurável e sorteie vencedores aleatoriamente.</p>
+        <p className="text-ru-muted mt-2">
+          Crie sorteios com período configurável e sorteie vencedores aleatoriamente.
+        </p>
       </header>
 
       <form onSubmit={submit} className="card space-y-4">
-        <h2 className="font-display text-xl font-semibold flex items-center gap-2"><Shuffle size={20} className="text-ru-blue" /> Novo sorteio</h2>
+        <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+          <Shuffle size={20} className="text-ru-blue" /> Novo sorteio
+        </h2>
         <div>
           <label className="text-sm font-body font-medium text-ru-charcoal">Nome do sorteio</label>
           <input
@@ -126,7 +147,9 @@ export default function RaffleCreatePage() {
           </div>
         </div>
         <div>
-          <label className="text-sm font-body font-medium text-ru-charcoal">Número de vencedores</label>
+          <label className="text-sm font-body font-medium text-ru-charcoal">
+            Número de vencedores
+          </label>
           <input
             type="number"
             min="1"
@@ -136,32 +159,50 @@ export default function RaffleCreatePage() {
             onChange={(e) => setForm({ ...form, num_winners: parseInt(e.target.value) || 1 })}
           />
         </div>
-        <button type="submit" disabled={creating} className="btn-primary inline-flex items-center gap-2 disabled:opacity-50">
+        <button
+          type="submit"
+          disabled={creating}
+          className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+        >
           <Shuffle size={17} /> {creating ? 'Criando…' : 'Criar sorteio'}
         </button>
       </form>
 
       <section className="card">
-        <h2 className="font-display text-xl font-semibold mb-4 flex items-center gap-2"><Trophy size={20} className="text-ru-yellow" /> Sorteios existentes</h2>
+        <h2 className="font-display text-xl font-semibold mb-4 flex items-center gap-2">
+          <Trophy size={20} className="text-ru-yellow" /> Sorteios existentes
+        </h2>
 
         {loading ? (
           <div className="animate-pulse h-48 rounded-xl bg-ru-cream-dark/50" />
         ) : error ? (
           <div className="text-center py-10">
             <AlertCircle size={32} className="mx-auto text-red-400" />
-            <p className="font-display font-semibold text-ru-charcoal mt-3">Erro ao carregar sorteios</p>
-            <button onClick={load} className="btn-primary px-4 py-2 mt-4 inline-flex items-center gap-2 text-sm"><RefreshCw size={14} /> Tentar novamente</button>
+            <p className="font-display font-semibold text-ru-charcoal mt-3">
+              Erro ao carregar sorteios
+            </p>
+            <button
+              onClick={load}
+              className="btn-primary px-4 py-2 mt-4 inline-flex items-center gap-2 text-sm"
+            >
+              <RefreshCw size={14} /> Tentar novamente
+            </button>
           </div>
         ) : raffles.length === 0 ? (
           <div className="text-center py-10">
             <Users size={32} className="mx-auto text-ru-muted" />
-            <p className="font-display font-semibold text-ru-charcoal mt-3">Nenhum sorteio criado</p>
+            <p className="font-display font-semibold text-ru-charcoal mt-3">
+              Nenhum sorteio criado
+            </p>
             <p className="text-sm text-ru-muted mt-1">Crie um sorteio acima para começar.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {raffles.map((r) => (
-              <div key={r.id} className="flex items-center justify-between p-4 rounded-xl border border-ru-cream-dark hover:border-ru-blue/30 transition-colors">
+              <div
+                key={r.id}
+                className="flex items-center justify-between p-4 rounded-xl border border-ru-cream-dark hover:border-ru-blue/30 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-ru-blue/10 flex items-center justify-center">
                     <Calendar size={18} className="text-ru-blue" />
@@ -169,12 +210,15 @@ export default function RaffleCreatePage() {
                   <div>
                     <p className="font-display font-semibold text-ru-charcoal">{r.name}</p>
                     <p className="text-xs text-ru-muted">
-                      {formatDate(r.start_date)} — {formatDate(r.end_date)} · {r.num_winners} vencedor(es) · {r.winners_count || 0} contemplado(s)
+                      {formatDate(r.start_date)} — {formatDate(r.end_date)} · {r.num_winners}{' '}
+                      vencedor(es) · {r.winners_count || 0} contemplado(s)
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`tag ${STATUS_COLORS[r.status] || 'bg-gray-100 text-gray-500'}`}>{STATUS_LABELS[r.status] || r.status}</span>
+                  <span className={`tag ${STATUS_COLORS[r.status] || 'bg-gray-100 text-gray-500'}`}>
+                    {STATUS_LABELS[r.status] || r.status}
+                  </span>
                   {r.status === 'open' && (
                     <button
                       onClick={() => draw(r.id)}
@@ -185,7 +229,9 @@ export default function RaffleCreatePage() {
                     </button>
                   )}
                   {r.status === 'drawn' && (
-                    <span className="text-emerald-500"><CheckCircle2 size={18} /></span>
+                    <span className="text-emerald-500">
+                      <CheckCircle2 size={18} />
+                    </span>
                   )}
                 </div>
               </div>

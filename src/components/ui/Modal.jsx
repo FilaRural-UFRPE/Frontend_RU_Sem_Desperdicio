@@ -10,9 +10,12 @@ export default function Modal({ open, onClose, title, children }) {
     if (!open) return undefined
     previousFocusRef.current = document.activeElement
     const dialog = dialogRef.current
-    const focusable = () => Array.from(dialog?.querySelectorAll(
-      'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
-    ) || [])
+    const focusable = () =>
+      Array.from(
+        dialog?.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+        ) || []
+      )
     focusable()[0]?.focus()
 
     const handler = (event) => {
@@ -70,8 +73,15 @@ export default function Modal({ open, onClose, title, children }) {
         className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto p-6 animate-slide-up"
       >
         <div className="flex items-center justify-between mb-5">
-          <h2 id={titleId} className="font-display font-semibold text-lg text-ru-charcoal">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Fechar" className="min-w-11 min-h-11 grid place-items-center text-ru-muted hover:text-ru-charcoal transition-colors">
+          <h2 id={titleId} className="font-display font-semibold text-lg text-ru-charcoal">
+            {title}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="min-w-11 min-h-11 grid place-items-center text-ru-muted hover:text-ru-charcoal transition-colors"
+          >
             <X size={20} />
           </button>
         </div>

@@ -5,8 +5,17 @@ import { scheduleAPI } from '../../services/api'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
-  Calendar, History, User, Clock, CheckCircle, Utensils, Users,
-  Sun, Sunset, Moon, UtensilsCrossed,
+  Calendar,
+  History,
+  User,
+  Clock,
+  CheckCircle,
+  Utensils,
+  Users,
+  Sun,
+  Sunset,
+  Moon,
+  UtensilsCrossed,
 } from 'lucide-react'
 
 const QUEUE_API_URL =
@@ -15,10 +24,15 @@ const QUEUE_API_URL =
   'https://filarural-visao-computacional-1.onrender.com/queue/status'
 
 const QUEUE_STATUS_MAP = {
-  vazia:   { label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
-  pequena: { label: 'Fila pequena', color: 'text-green-700',  bg: 'bg-green-50',  dot: 'bg-green-500' },
-  média:   { label: 'Fila média',   color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-500' },
-  grande:  { label: 'Fila grande',  color: 'text-red-700',    bg: 'bg-red-50',    dot: 'bg-red-500' },
+  vazia: { label: 'Fila pequena', color: 'text-green-700', bg: 'bg-green-50', dot: 'bg-green-500' },
+  pequena: {
+    label: 'Fila pequena',
+    color: 'text-green-700',
+    bg: 'bg-green-50',
+    dot: 'bg-green-500',
+  },
+  média: { label: 'Fila média', color: 'text-amber-700', bg: 'bg-amber-50', dot: 'bg-amber-500' },
+  grande: { label: 'Fila grande', color: 'text-red-700', bg: 'bg-red-50', dot: 'bg-red-500' },
 }
 
 function normalizeQueueData(data) {
@@ -41,11 +55,15 @@ function normalizeQueueData(data) {
   }
 
   const isStale =
-    typeof data.is_stale === 'boolean'
-      ? data.is_stale
-      : ageMinutes !== null && ageMinutes > 10
+    typeof data.is_stale === 'boolean' ? data.is_stale : ageMinutes !== null && ageMinutes > 10
 
-  return { status, waiting_time_minutes: waitingTimeMinutes, available, is_stale: isStale, age_minutes: ageMinutes }
+  return {
+    status,
+    waiting_time_minutes: waitingTimeMinutes,
+    available,
+    is_stale: isStale,
+    age_minutes: ageMinutes,
+  }
 }
 
 function SkeletonBlock({ className = '' }) {
@@ -118,7 +136,8 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    scheduleAPI.mySchedules()
+    scheduleAPI
+      .mySchedules()
       .then(({ data }) => {
         const raw = data?.data || []
         const parsed = raw.map(([id, schedule_type, schedule_date, estimated_time]) => ({
@@ -143,10 +162,7 @@ export default function StudentDashboard() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Saudação */}
-      <div
-        className="mb-8 opacity-0 animate-slide-up"
-        style={{ animationDelay: '0ms' }}
-      >
+      <div className="mb-8 opacity-0 animate-slide-up" style={{ animationDelay: '0ms' }}>
         <div className="flex items-center gap-2 mb-1">
           <GreetingIcon size={16} className="text-ru-yellow" />
           <p className="text-ru-muted font-body text-sm capitalize">{greeting}</p>
@@ -158,10 +174,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Fila */}
-      <div
-        className="opacity-0 animate-slide-up"
-        style={{ animationDelay: '80ms' }}
-      >
+      <div className="opacity-0 animate-slide-up" style={{ animationDelay: '80ms' }}>
         <QueueStatusCard />
       </div>
 
@@ -230,10 +243,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Próximas refeições */}
-      <div
-        className="card opacity-0 animate-slide-up"
-        style={{ animationDelay: '320ms' }}
-      >
+      <div className="card opacity-0 animate-slide-up" style={{ animationDelay: '320ms' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display font-semibold text-ru-charcoal">Próximas refeições</h2>
           <Link to="/historico" className="text-xs text-ru-blue font-body hover:underline">
@@ -270,7 +280,9 @@ export default function StudentDashboard() {
                   <p className="text-sm font-body font-medium text-ru-charcoal">
                     {s.schedule_type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar'}
                   </p>
-                  <p className="text-xs text-ru-muted">{s.schedule_date} · {s.estimated_time}</p>
+                  <p className="text-xs text-ru-muted">
+                    {s.schedule_date} · {s.estimated_time}
+                  </p>
                 </div>
                 <CheckCircle size={16} className="text-blue-700" />
               </div>

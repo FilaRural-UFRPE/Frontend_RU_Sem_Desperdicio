@@ -15,7 +15,9 @@ export function validateCPF(cpf) {
 }
 
 export function maskCPF(v) {
-  return v.replace(/\D/g, '').slice(0, 11)
+  return v
+    .replace(/\D/g, '')
+    .slice(0, 11)
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
@@ -108,7 +110,8 @@ export function getErrorMessage(err) {
   if (data?.detail?.msg) {
     const msg = data.detail.msg
     if (msg.includes('duplicate key')) return 'Já tens uma refeição agendada para esse dia e tipo!'
-    if (msg.includes('unique constraint')) return 'Já tens uma refeição agendada para esse dia e tipo!'
+    if (msg.includes('unique constraint'))
+      return 'Já tens uma refeição agendada para esse dia e tipo!'
     return msg
   }
 
@@ -116,12 +119,12 @@ export function getErrorMessage(err) {
 
   if (data?.detail) {
     if (typeof data.detail === 'string') return data.detail
-    if (Array.isArray(data.detail)) return data.detail.map(d => d.msg).join(', ')
+    if (Array.isArray(data.detail)) return data.detail.map((d) => d.msg).join(', ')
   }
 
   // Erros de validação 422
   if (status === 422 && data?.details) {
-    return data.details.map(d => d.msg || d.message).join(', ')
+    return data.details.map((d) => d.msg || d.message).join(', ')
   }
 
   if (data?.msg) return data.msg

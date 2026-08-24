@@ -184,8 +184,8 @@ export default function AppPage() {
                 Você está no {getBrowserName(detected.browser)}
               </p>
               <p className="font-body text-ru-charcoal text-xs mt-1">
-                No iPhone, o app só pode ser instalado pelo <strong>Safari</strong>. Abra este link no Safari
-                (copie o endereço e cole na barra de endereço do Safari) para instalar.
+                No iPhone, o app só pode ser instalado pelo <strong>Safari</strong>. Abra este link
+                no Safari (copie o endereço e cole na barra de endereço do Safari) para instalar.
               </p>
             </div>
           </div>
@@ -216,7 +216,8 @@ export default function AppPage() {
           <div className="mt-5 p-3 bg-emerald-50 rounded-xl flex items-start gap-2">
             <CheckCircle size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
             <p className="text-emerald-700 text-xs font-body">
-              Depois de instalado, o app funciona como um aplicativo nativo — rápido, offline e na sua tela inicial!
+              Depois de instalado, o app funciona como um aplicativo nativo — rápido, offline e na
+              sua tela inicial!
             </p>
           </div>
         </div>

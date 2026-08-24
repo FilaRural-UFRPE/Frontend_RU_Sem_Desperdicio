@@ -24,13 +24,22 @@ export default function ReportsPage() {
 
   useEffect(() => {
     const days = lastNDays(7)
-    Promise.all(days.map((d) => reportAPI.demand(d).then((r) => ({ date: d, ...r.data })).catch(() => ({ date: d, almoco: 0, jantar: 0 }))))
+    Promise.all(
+      days.map((d) =>
+        reportAPI
+          .demand(d)
+          .then((r) => ({ date: d, ...r.data }))
+          .catch(() => ({ date: d, almoco: 0, jantar: 0 }))
+      )
+    )
       .then((results) => {
-        setWeekData(results.map((r) => ({
-          date: r.date.slice(5).replace('-', '/'),
-          Almoço: r.almoco ?? 0,
-          Jantar: r.jantar ?? 0,
-        })))
+        setWeekData(
+          results.map((r) => ({
+            date: r.date.slice(5).replace('-', '/'),
+            Almoço: r.almoco ?? 0,
+            Jantar: r.jantar ?? 0,
+          }))
+        )
       })
       .finally(() => setLoading(false))
   }, [])
@@ -61,8 +70,17 @@ export default function ReportsPage() {
           <p className="text-ru-muted font-body text-sm mt-1">Demanda dos últimos 7 dias</p>
         </div>
         <div className="flex gap-2">
-          <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="input-field w-auto text-sm py-2" />
-          <button onClick={handleExport} disabled={exporting} className="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="input-field w-auto text-sm py-2"
+          />
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="btn-primary px-4 py-2 text-sm flex items-center gap-2"
+          >
             {exporting ? <Spinner size={14} /> : <Download size={14} />}
             Exportar CSV
           </button>
@@ -70,18 +88,50 @@ export default function ReportsPage() {
       </div>
 
       <div className="card">
-        <h2 className="font-display font-semibold text-ru-charcoal mb-6">Almoço vs Jantar — últimos 7 dias</h2>
+        <h2 className="font-display font-semibold text-ru-charcoal mb-6">
+          Almoço vs Jantar — últimos 7 dias
+        </h2>
         {loading ? (
-          <div className="flex justify-center py-12"><Spinner size={28} className="text-ru-blue" /></div>
+          <div className="flex justify-center py-12">
+            <Spinner size={28} className="text-ru-blue" />
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={weekData}>
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontFamily: 'DM Sans', fontSize: 12, fill: '#6b7280' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontFamily: 'DM Sans', fontSize: 12, fill: '#6b7280' }} />
-              <Tooltip contentStyle={{ fontFamily: 'DM Sans', borderRadius: 12, border: '1px solid #e8e0d0', boxShadow: 'none' }} />
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontFamily: 'DM Sans', fontSize: 12, fill: '#6b7280' }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontFamily: 'DM Sans', fontSize: 12, fill: '#6b7280' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  fontFamily: 'DM Sans',
+                  borderRadius: 12,
+                  border: '1px solid #e8e0d0',
+                  boxShadow: 'none',
+                }}
+              />
               <Legend wrapperStyle={{ fontFamily: 'DM Sans', fontSize: 13 }} />
-              <Line type="monotone" dataKey="Almoço" stroke="#1a3a8f" strokeWidth={2.5} dot={{ r: 4, fill: '#1a3a8f' }} />
-              <Line type="monotone" dataKey="Jantar" stroke="#f5a623" strokeWidth={2.5} dot={{ r: 4, fill: '#f5a623' }} />
+              <Line
+                type="monotone"
+                dataKey="Almoço"
+                stroke="#1a3a8f"
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: '#1a3a8f' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="Jantar"
+                stroke="#f5a623"
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: '#f5a623' }}
+              />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -89,7 +139,10 @@ export default function ReportsPage() {
 
       {/* Legenda de cores */}
       <div className="grid grid-cols-2 gap-4 mt-4">
-        {[{ label: 'Almoço', color: 'bg-ru-blue', note: '11h – 14h' }, { label: 'Jantar', color: 'bg-ru-yellow', note: '17h – 20h' }].map((m) => (
+        {[
+          { label: 'Almoço', color: 'bg-ru-blue', note: '11h – 14h' },
+          { label: 'Jantar', color: 'bg-ru-yellow', note: '17h – 20h' },
+        ].map((m) => (
           <div key={m.label} className="card flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${m.color}`} />
             <div>

@@ -32,7 +32,10 @@ export function ToastProvider({ children }) {
           >
             <span className="mt-0.5">{icons[t.type]}</span>
             <p className="flex-1 text-sm font-body text-ru-charcoal">{t.message}</p>
-            <button onClick={() => remove(t.id)} className="text-ru-muted hover:text-ru-charcoal transition-colors">
+            <button
+              onClick={() => remove(t.id)}
+              className="text-ru-muted hover:text-ru-charcoal transition-colors"
+            >
               <X size={14} />
             </button>
           </div>

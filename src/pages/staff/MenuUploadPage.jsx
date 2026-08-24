@@ -5,7 +5,8 @@ import { menuAPI } from '../../services/api'
 import { UploadCloud, ImageIcon, CheckCircle, Brain } from 'lucide-react'
 import axios from 'axios'
 
-const MENU_ANALYZER_URL = import.meta.env.VITE_MENU_ANALYZER_URL || 'https://smartru-menu-analyzer.onrender.com'
+const MENU_ANALYZER_URL =
+  import.meta.env.VITE_MENU_ANALYZER_URL || 'https://smartru-menu-analyzer.onrender.com'
 
 async function uploadMenu(lunchFile, dinnerFile) {
   const formData = new FormData()
@@ -60,14 +61,21 @@ function DropZone({ label, emoji, file, preview, inputRef, onChange, onDrop, onR
         ) : (
           <div className="flex flex-col items-center gap-2 py-8">
             <ImageIcon size={36} className="text-ru-muted opacity-30" />
-            <p className="font-display font-semibold text-ru-charcoal text-sm">Arrasta a imagem aqui</p>
-            <p className="text-ru-muted font-body text-xs">ou clica para selecionar · PNG ou JPG · máx 10MB</p>
+            <p className="font-display font-semibold text-ru-charcoal text-sm">
+              Arrasta a imagem aqui
+            </p>
+            <p className="text-ru-muted font-body text-xs">
+              ou clica para selecionar · PNG ou JPG · máx 10MB
+            </p>
           </div>
         )}
       </div>
       {preview && (
         <button
-          onClick={(e) => { e.stopPropagation(); onRemove() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove()
+          }}
           className="btn-secondary px-4 py-1.5 text-xs self-start"
         >
           Remover
@@ -78,17 +86,17 @@ function DropZone({ label, emoji, file, preview, inputRef, onChange, onDrop, onR
 }
 
 export default function MenuUploadPage() {
-  const [lunchFile, setLunchFile]     = useState(null)
+  const [lunchFile, setLunchFile] = useState(null)
   const [lunchPreview, setLunchPreview] = useState(null)
-  const [dinnerFile, setDinnerFile]   = useState(null)
+  const [dinnerFile, setDinnerFile] = useState(null)
   const [dinnerPreview, setDinnerPreview] = useState(null)
-  const [loading, setLoading]         = useState(false)
+  const [loading, setLoading] = useState(false)
   const [analyzingAI, setAnalyzingAI] = useState(false)
-  const [publishedLunch, setPublishedLunch]   = useState(null)
+  const [publishedLunch, setPublishedLunch] = useState(null)
   const [publishedDinner, setPublishedDinner] = useState(null)
   const [extractedDishes, setExtractedDishes] = useState(null)
 
-  const lunchRef  = useRef(null)
+  const lunchRef = useRef(null)
   const dinnerRef = useRef(null)
   const { toast } = useToast()
 
@@ -141,7 +149,6 @@ export default function MenuUploadPage() {
           setAnalyzingAI(false)
         }
       }
-
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
         toast('Sem permissão para fazer upload', 'error')
@@ -175,7 +182,10 @@ export default function MenuUploadPage() {
           inputRef={lunchRef}
           onChange={handleFile(setLunchFile, setLunchPreview)}
           onDrop={handleDrop(setLunchFile, setLunchPreview)}
-          onRemove={() => { setLunchFile(null); setLunchPreview(null) }}
+          onRemove={() => {
+            setLunchFile(null)
+            setLunchPreview(null)
+          }}
         />
         <DropZone
           label="Jantar (opcional)"
@@ -185,7 +195,10 @@ export default function MenuUploadPage() {
           inputRef={dinnerRef}
           onChange={handleFile(setDinnerFile, setDinnerPreview)}
           onDrop={handleDrop(setDinnerFile, setDinnerPreview)}
-          onRemove={() => { setDinnerFile(null); setDinnerPreview(null) }}
+          onRemove={() => {
+            setDinnerFile(null)
+            setDinnerPreview(null)
+          }}
         />
       </div>
 
@@ -197,9 +210,13 @@ export default function MenuUploadPage() {
           className="btn-primary flex items-center gap-2 px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <><Spinner size={14} /> A publicar...</>
+            <>
+              <Spinner size={14} /> A publicar...
+            </>
           ) : (
-            <><UploadCloud size={16} /> Publicar cardápio</>
+            <>
+              <UploadCloud size={16} /> Publicar cardápio
+            </>
           )}
         </button>
 
@@ -228,7 +245,11 @@ export default function MenuUploadPage() {
               <div className="px-5 py-3 bg-ru-blue/5 border-b border-ru-cream-dark">
                 <p className="font-display font-semibold text-ru-blue text-sm">🍽 Almoço</p>
               </div>
-              <img src={publishedLunch} alt="Cardápio do almoço" className="w-full object-contain max-h-[60vh]" />
+              <img
+                src={publishedLunch}
+                alt="Cardápio do almoço"
+                className="w-full object-contain max-h-[60vh]"
+              />
             </div>
           )}
 
@@ -237,7 +258,11 @@ export default function MenuUploadPage() {
               <div className="px-5 py-3 bg-ru-blue/5 border-b border-ru-cream-dark">
                 <p className="font-display font-semibold text-ru-blue text-sm">🌙 Jantar</p>
               </div>
-              <img src={publishedDinner} alt="Cardápio do jantar" className="w-full object-contain max-h-[60vh]" />
+              <img
+                src={publishedDinner}
+                alt="Cardápio do jantar"
+                className="w-full object-contain max-h-[60vh]"
+              />
             </div>
           )}
 
@@ -246,34 +271,56 @@ export default function MenuUploadPage() {
             <div className="card">
               <div className="flex items-center gap-2 mb-4">
                 <Brain size={18} className="text-ru-blue" />
-                <p className="font-display font-semibold text-ru-charcoal text-sm">Pratos extraídos pela IA</p>
+                <p className="font-display font-semibold text-ru-charcoal text-sm">
+                  Pratos extraídos pela IA
+                </p>
               </div>
 
               {extractedDishes.lunch?.dishes && (
                 <div className="mb-4">
-                  <p className="text-xs font-body font-semibold text-ru-muted uppercase tracking-wide mb-2">🍽 Almoço</p>
-                  {Object.entries(extractedDishes.lunch.dishes.dishes || extractedDishes.lunch.dishes).map(([key, items]) => (
-                    items && items.length > 0 && (
-                      <div key={key} className="mb-1">
-                        <span className="text-xs text-ru-muted font-body capitalize">{key.replace('_', ' ')}: </span>
-                        <span className="text-xs text-ru-charcoal font-body">{items.join(', ')}</span>
-                      </div>
-                    )
-                  ))}
+                  <p className="text-xs font-body font-semibold text-ru-muted uppercase tracking-wide mb-2">
+                    🍽 Almoço
+                  </p>
+                  {Object.entries(
+                    extractedDishes.lunch.dishes.dishes || extractedDishes.lunch.dishes
+                  ).map(
+                    ([key, items]) =>
+                      items &&
+                      items.length > 0 && (
+                        <div key={key} className="mb-1">
+                          <span className="text-xs text-ru-muted font-body capitalize">
+                            {key.replace('_', ' ')}:{' '}
+                          </span>
+                          <span className="text-xs text-ru-charcoal font-body">
+                            {items.join(', ')}
+                          </span>
+                        </div>
+                      )
+                  )}
                 </div>
               )}
 
               {extractedDishes.dinner?.dishes && (
                 <div>
-                  <p className="text-xs font-body font-semibold text-ru-muted uppercase tracking-wide mb-2">🌙 Jantar</p>
-                  {Object.entries(extractedDishes.dinner.dishes.dishes || extractedDishes.dinner.dishes).map(([key, items]) => (
-                    items && items.length > 0 && (
-                      <div key={key} className="mb-1">
-                        <span className="text-xs text-ru-muted font-body capitalize">{key.replace('_', ' ')}: </span>
-                        <span className="text-xs text-ru-charcoal font-body">{items.join(', ')}</span>
-                      </div>
-                    )
-                  ))}
+                  <p className="text-xs font-body font-semibold text-ru-muted uppercase tracking-wide mb-2">
+                    🌙 Jantar
+                  </p>
+                  {Object.entries(
+                    extractedDishes.dinner.dishes.dishes || extractedDishes.dinner.dishes
+                  ).map(
+                    ([key, items]) =>
+                      items &&
+                      items.length > 0 && (
+                        <div key={key} className="mb-1">
+                          <span className="text-xs text-ru-muted font-body capitalize">
+                            {key.replace('_', ' ')}:{' '}
+                          </span>
+                          <span className="text-xs text-ru-charcoal font-body">
+                            {items.join(', ')}
+                          </span>
+                        </div>
+                      )
+                  )}
                 </div>
               )}
             </div>

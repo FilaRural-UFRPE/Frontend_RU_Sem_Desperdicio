@@ -53,7 +53,9 @@ export async function removeLocalUsages(voucherIds) {
 export async function checkLocalUsage(voucherId) {
   const db = await openDB()
   try {
-    return Boolean(await requestResult(db.transaction(STORE_NAME).objectStore(STORE_NAME).get(voucherId)))
+    return Boolean(
+      await requestResult(db.transaction(STORE_NAME).objectStore(STORE_NAME).get(voucherId))
+    )
   } finally {
     db.close()
   }

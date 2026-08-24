@@ -37,7 +37,11 @@ api.interceptors.response.use(
 
     // 401 = sessão expirada → tenta refresh uma única vez
     // Ignora 401 no login (credenciais inválidas não devem tentar refresh)
-    if (status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/user/login')) {
+    if (
+      status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/user/login')
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
@@ -92,16 +96,18 @@ export const scheduleAPI = {
   confirm: (data) => api.put('/schedule/confirm', data),
   cancel: (data) => api.delete('/schedule/delete', { data }),
   mySchedules: () => api.get('/schedule/me'),
-  allSchedules: (date) => api.get('/schedule/all', {
-    params: date ? { date } : {}
-  }),
+  allSchedules: (date) =>
+    api.get('/schedule/all', {
+      params: date ? { date } : {},
+    }),
 }
 
 // ─── Cardápio ─────────────────────────────────────────
 export const menuAPI = {
-  upload: (formData) => api.post('/menu/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  upload: (formData) =>
+    api.post('/menu/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
   current: () => api.get('/menu/current'),
   image: (menuId, mealType = 'lunch') =>
     api.get(`/menu/image/${menuId}/${mealType}`, { responseType: 'blob' }),
@@ -159,56 +165,49 @@ export const reportAPI = {
 
 // ─── Ranking / Leaderboard ────────────────────────────
 export const rankingAPI = {
-  list: (mes, page = 1, limit = 10) =>
-    api.get('/ranking', { params: { mes, page, limit } }),
-  winner: (mes) =>
-    api.get('/ranking/winner', { params: { mes } }),
+  list: (mes, page = 1, limit = 10) => api.get('/ranking', { params: { mes, page, limit } }),
+  winner: (mes) => api.get('/ranking/winner', { params: { mes } }),
   importCsv: (file) => {
     const form = new FormData()
     form.append('file', file)
     return api.post('/ranking/import-csv', form)
   },
-  setWinner: (year, month, user_cpf) =>
-    api.post('/ranking/winner', { year, month, user_cpf }),
+  setWinner: (year, month, user_cpf) => api.post('/ranking/winner', { year, month, user_cpf }),
   // Raffle / Sorteio
   raffleCreate: (name, startDate, endDate, numWinners = 1) =>
-    api.post('/ranking/raffle/create', { name, start_date: startDate, end_date: endDate, num_winners: numWinners }),
-  raffleList: (status = null) =>
-    api.get('/ranking/raffles', { params: status ? { status } : {} }),
-  raffleDraw: (raffleId) =>
-    api.post(`/ranking/raffle/${raffleId}/draw`),
-  raffleWinners: (raffleId) =>
-    api.get(`/ranking/raffle/${raffleId}/winners`),
+    api.post('/ranking/raffle/create', {
+      name,
+      start_date: startDate,
+      end_date: endDate,
+      num_winners: numWinners,
+    }),
+  raffleList: (status = null) => api.get('/ranking/raffles', { params: status ? { status } : {} }),
+  raffleDraw: (raffleId) => api.post(`/ranking/raffle/${raffleId}/draw`),
+  raffleWinners: (raffleId) => api.get(`/ranking/raffle/${raffleId}/winners`),
 }
 
 // ─── Campanha / Roleta ───────────────────────────────
 export const campaignAPI = {
-  list: () =>
-    api.get('/campaign'),
-  get: (id) =>
-    api.get(`/campaign/${id}`),
-  create: (data) =>
-    api.post('/campaign', data),
-  computeStats: (id) =>
-    api.post(`/campaign/${id}/compute-stats`),
+  list: () => api.get('/campaign'),
+  get: (id) => api.get(`/campaign/${id}`),
+  create: (data) => api.post('/campaign', data),
+  computeStats: (id) => api.post(`/campaign/${id}/compute-stats`),
   participants: (id, onlyEligible = false) =>
     api.get(`/campaign/${id}/participants`, { params: { only_eligible: onlyEligible } }),
-  spin: (id) =>
-    api.post(`/campaign/${id}/spin`),
-  confirmSpin: (spinId) =>
-    api.post(`/campaign/spin/${spinId}/confirm`),
-  cancelSpin: (spinId) =>
-    api.post(`/campaign/spin/${spinId}/cancel`),
+  spin: (id) => api.post(`/campaign/${id}/spin`),
+  confirmSpin: (spinId) => api.post(`/campaign/spin/${spinId}/confirm`),
+  cancelSpin: (spinId) => api.post(`/campaign/spin/${spinId}/cancel`),
   registerVoucher: (spinId, userCpf) =>
     api.post(`/campaign/spin/${spinId}/voucher`, { user_cpf: userCpf }),
-  getVoucher: (voucherId) =>
-    api.get(`/campaign/voucher/${voucherId}`),
+  getVoucher: (voucherId) => api.get(`/campaign/voucher/${voucherId}`),
   useVoucher: (voucherId, nonce, signatureHex, mealType = 'lunch') =>
-    api.post(`/campaign/voucher/${voucherId}/use`, buildEventVoucherUsePayload(nonce, signatureHex, mealType)),
+    api.post(
+      `/campaign/voucher/${voucherId}/use`,
+      buildEventVoucherUsePayload(nonce, signatureHex, mealType)
+    ),
   listVouchers: (campaignId = null) =>
     api.get('/campaign/vouchers', { params: campaignId ? { campaign_id: campaignId } : {} }),
-  myVoucher: () =>
-    api.get('/campaign/my-voucher'),
+  myVoucher: () => api.get('/campaign/my-voucher'),
 }
 
 export function buildEventVoucherUsePayload(nonce, signatureHex, mealType = 'lunch') {

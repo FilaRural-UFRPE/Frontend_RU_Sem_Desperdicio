@@ -47,7 +47,9 @@ export default function LoginPage() {
       const status = err.response?.status
       const serverMsg = err.response?.data?.message || err.response?.data?.msg
       if (status === 429) {
-        setErrors({ form: serverMsg || 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' })
+        setErrors({
+          form: serverMsg || 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
+        })
       } else {
         setErrors({ form: 'CPF ou senha incorretos. Tente novamente.' })
       }
@@ -66,7 +68,11 @@ export default function LoginPage() {
 
         <div className="relative">
           <div className="flex items-center gap-4 mb-12">
-            <img src={logoImg} alt="Smart RU" className="w-16 h-16 object-contain rounded-2xl bg-white/10 p-1" />
+            <img
+              src={logoImg}
+              alt="Smart RU"
+              className="w-16 h-16 object-contain rounded-2xl bg-white/10 p-1"
+            />
             <div>
               <p className="font-display font-bold text-white text-2xl leading-none">Smart RU</p>
               <p className="text-white/60 font-body text-sm">Sem Desperdício</p>
@@ -74,10 +80,15 @@ export default function LoginPage() {
           </div>
 
           <h1 className="font-display font-bold text-white text-4xl leading-tight mb-4">
-            Refeições<br />inteligentes,<br />sem desperdício
+            Refeições
+            <br />
+            inteligentes,
+            <br />
+            sem desperdício
           </h1>
           <p className="text-white/70 font-body text-lg leading-relaxed">
-            Agende sua refeição no Restaurante Universitário e ajude a reduzir o desperdício de alimentos.
+            Agende sua refeição no Restaurante Universitário e ajude a reduzir o desperdício de
+            alimentos.
           </p>
         </div>
 
@@ -86,7 +97,10 @@ export default function LoginPage() {
             { value: '2.4k', label: 'Agendamentos/dia' },
             { value: '38%', label: 'Menos desperdício' },
           ].map((s) => (
-            <div key={s.label} className="flex-1 bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
+            <div
+              key={s.label}
+              className="flex-1 bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10"
+            >
               <p className="font-display font-bold text-ru-yellow text-2xl">{s.value}</p>
               <p className="text-white/60 text-sm font-body">{s.label}</p>
             </div>
@@ -126,7 +140,10 @@ export default function LoginPage() {
               />
               {/* 👈 Link de recuperação de senha */}
               <div className="text-right mt-2">
-                <Link to="/recuperar-senha" className="text-sm text-ru-blue font-body font-medium hover:underline py-2 px-1 inline-block">
+                <Link
+                  to="/recuperar-senha"
+                  className="text-sm text-ru-blue font-body font-medium hover:underline py-2 px-1 inline-block"
+                >
                   Esqueceste a senha?
                 </Link>
               </div>
@@ -134,7 +151,9 @@ export default function LoginPage() {
 
             {/* Mensagem de erro geral */}
             {errors.form && (
-              <div className={`bg-red-50 border-2 border-red-300 rounded-xl px-4 py-3 flex items-center gap-3 ${shake ? 'animate-shake' : ''}`}>
+              <div
+                className={`bg-red-50 border-2 border-red-300 rounded-xl px-4 py-3 flex items-center gap-3 ${shake ? 'animate-shake' : ''}`}
+              >
                 <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <span className="text-red-600 text-sm font-bold">!</span>
                 </div>
@@ -142,7 +161,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn-primary mt-2 flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary mt-2 flex items-center justify-center gap-2"
+            >
               {loading ? <Spinner size={18} /> : 'Entrar'}
             </button>
           </form>

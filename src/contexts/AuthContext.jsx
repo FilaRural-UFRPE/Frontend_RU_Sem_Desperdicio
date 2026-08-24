@@ -10,7 +10,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const stored = localStorage.getItem('smartru_user')
     if (stored) {
-      try { setUser(JSON.parse(stored)) } catch { localStorage.removeItem('smartru_user') }
+      try {
+        setUser(JSON.parse(stored))
+      } catch {
+        localStorage.removeItem('smartru_user')
+      }
     }
     setLoading(false)
   }, [])
@@ -46,7 +50,9 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await authAPI.logout()
-    } catch { /* ignora erro de rede no logout */ }
+    } catch {
+      /* ignora erro de rede no logout */
+    }
     localStorage.removeItem('smartru_user')
     setUser(null)
   }, [])

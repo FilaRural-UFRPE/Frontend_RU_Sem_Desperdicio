@@ -18,14 +18,21 @@ export default function EventVoucherHistoryPage() {
   const [campaignError, setCampaignError] = useState(false)
 
   const toggleExpand = async (voucher) => {
-    if (expanded === voucher.id) { setExpanded(null); return }
+    if (expanded === voucher.id) {
+      setExpanded(null)
+      return
+    }
     setExpanded(voucher.id)
     try {
       const { data } = await campaignAPI.getVoucher(voucher.id)
       if (data.success) {
-        setVouchers((list) => list.map((v) => (v.id === voucher.id ? { ...v, usages: data.data.usages } : v)))
+        setVouchers((list) =>
+          list.map((v) => (v.id === voucher.id ? { ...v, usages: data.data.usages } : v))
+        )
       }
-    } catch { /* mantém sem detalhes */ }
+    } catch {
+      /* mantém sem detalhes */
+    }
   }
 
   const loadCampaigns = useCallback(async () => {
@@ -41,34 +48,49 @@ export default function EventVoucherHistoryPage() {
     }
   }, [])
 
-  const loadVouchers = useCallback(async (id) => {
-    setLoading(true)
-    try {
-      const { data } = await campaignAPI.listVouchers(id)
-      setVouchers(data.data || [])
-    } catch (error) {
-      toast(error.response?.data?.msg || 'Erro ao carregar vouchers', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }, [toast])
+  const loadVouchers = useCallback(
+    async (id) => {
+      setLoading(true)
+      try {
+        const { data } = await campaignAPI.listVouchers(id)
+        setVouchers(data.data || [])
+      } catch (error) {
+        toast(error.response?.data?.msg || 'Erro ao carregar vouchers', 'error')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [toast]
+  )
 
-  useEffect(() => { loadCampaigns() }, [loadCampaigns])
-  useEffect(() => { if (campaignId) loadVouchers(campaignId) }, [campaignId, loadVouchers])
+  useEffect(() => {
+    loadCampaigns()
+  }, [loadCampaigns])
+  useEffect(() => {
+    if (campaignId) loadVouchers(campaignId)
+  }, [campaignId, loadVouchers])
 
   const filtered = vouchers.filter((v) => {
     if (!search.trim()) return true
     const q = search.toLowerCase()
-    return v.user_name?.toLowerCase().includes(q) || v.user_cpf?.includes(q) || v.code?.toLowerCase().includes(q)
+    return (
+      v.user_name?.toLowerCase().includes(q) ||
+      v.user_cpf?.includes(q) ||
+      v.code?.toLowerCase().includes(q)
+    )
   })
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">Admin · RU Sem Desperdício</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ru-blue">
+            Admin · RU Sem Desperdício
+          </p>
           <h1 className="font-display text-3xl md:text-4xl font-bold mt-2">Vouchers de evento</h1>
-          <p className="text-ru-muted mt-2">Histórico de todos os vouchers de 5 almoços gerados na roleta.</p>
+          <p className="text-ru-muted mt-2">
+            Histórico de todos os vouchers de 5 almoços gerados na roleta.
+          </p>
         </div>
         {campaigns.length > 0 && (
           <div className="relative">
@@ -77,9 +99,16 @@ export default function EventVoucherHistoryPage() {
               onChange={(e) => setCampaignId(Number(e.target.value))}
               className="input-field pr-9 appearance-none"
             >
-              {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {campaigns.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-ru-muted pointer-events-none" />
+            <ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ru-muted pointer-events-none"
+            />
           </div>
         )}
       </header>
@@ -95,18 +124,26 @@ export default function EventVoucherHistoryPage() {
       </div>
 
       {loading ? (
-        <div className="card flex items-center justify-center py-20"><Spinner size={28} /></div>
+        <div className="card flex items-center justify-center py-20">
+          <Spinner size={28} />
+        </div>
       ) : campaignError ? (
         <section className="card text-center py-16">
           <ClipboardList className="mx-auto text-ru-muted" size={38} />
-          <h2 className="font-display font-semibold text-xl mt-4">Não foi possível carregar as campanhas</h2>
-          <button className="btn-primary mt-5" onClick={loadCampaigns}>Tentar novamente</button>
+          <h2 className="font-display font-semibold text-xl mt-4">
+            Não foi possível carregar as campanhas
+          </h2>
+          <button className="btn-primary mt-5" onClick={loadCampaigns}>
+            Tentar novamente
+          </button>
         </section>
       ) : filtered.length === 0 ? (
         <section className="card text-center py-16">
           <ClipboardList className="mx-auto text-ru-muted" size={38} />
           <h2 className="font-display font-semibold text-xl mt-4">Nenhum voucher encontrado</h2>
-          <p className="text-ru-muted text-sm mt-2">Nenhum voucher de evento foi gerado para esta campanha ainda.</p>
+          <p className="text-ru-muted text-sm mt-2">
+            Nenhum voucher de evento foi gerado para esta campanha ainda.
+          </p>
         </section>
       ) : (
         <div className="space-y-3">
@@ -121,43 +158,63 @@ export default function EventVoucherHistoryPage() {
                   aria-expanded={isOpen}
                 >
                   <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-ru-charcoal truncate">{v.user_name}</p>
-                    <p className="font-mono text-xs text-ru-muted">{v.code} · {v.user_cpf}</p>
-                  </div>
-                  <div className="flex items-center gap-4 shrink-0 ml-4">
-                    <div className="text-right">
-                      <span className={`tag ${v.status === 'active' ? 'bg-emerald-50 text-emerald-800' : 'bg-ru-cream text-ru-charcoal'}`}>
-                        {v.status === 'active' ? `${v.meals_used}/${v.total_meals}` : v.status}
-                      </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-ru-charcoal truncate">{v.user_name}</p>
+                      <p className="font-mono text-xs text-ru-muted">
+                        {v.code} · {v.user_cpf}
+                      </p>
                     </div>
-                    <ChevronDown size={18} className={`text-ru-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                  </div>
+                    <div className="flex items-center gap-4 shrink-0 ml-4">
+                      <div className="text-right">
+                        <span
+                          className={`tag ${v.status === 'active' ? 'bg-emerald-50 text-emerald-800' : 'bg-ru-cream text-ru-charcoal'}`}
+                        >
+                          {v.status === 'active' ? `${v.meals_used}/${v.total_meals}` : v.status}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        size={18}
+                        className={`text-ru-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </div>
                   </div>
                 </button>
                 {isOpen && (
                   <div className="mt-4 pt-4 border-t border-ru-cream-dark">
                     <p className="text-sm text-ru-muted">Emitido em {formatDate(v.issued_at)}</p>
-                    {v.expires_at && <p className="text-sm text-ru-muted">Válido até {formatDate(v.expires_at)}</p>}
-                    <p className="text-sm font-medium mt-3 flex items-center gap-2"><UtensilsCrossed size={14} className="text-ru-blue" /> Refeições usadas</p>
+                    {v.expires_at && (
+                      <p className="text-sm text-ru-muted">Válido até {formatDate(v.expires_at)}</p>
+                    )}
+                    <p className="text-sm font-medium mt-3 flex items-center gap-2">
+                      <UtensilsCrossed size={14} className="text-ru-blue" /> Refeições usadas
+                    </p>
                     {v.usages?.length > 0 ? (
                       <div className="mt-2 space-y-1">
                         {v.usages.map((u) => (
-                          <div key={u.id} className="flex items-center justify-between rounded-lg bg-ru-cream px-3 py-1.5 text-sm">
+                          <div
+                            key={u.id}
+                            className="flex items-center justify-between rounded-lg bg-ru-cream px-3 py-1.5 text-sm"
+                          >
                             <span>{formatDate(u.meal_date)}</span>
-                            <span className="text-ru-muted">{u.meal_type === 'lunch' ? 'Almoço' : 'Jantar'}</span>
+                            <span className="text-ru-muted">
+                              {u.meal_type === 'lunch' ? 'Almoço' : 'Jantar'}
+                            </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-ru-muted mt-2">Nenhuma refeição utilizada ainda.</p>
+                      <p className="text-sm text-ru-muted mt-2">
+                        Nenhuma refeição utilizada ainda.
+                      </p>
                     )}
                   </div>
                 )}
               </div>
             )
           })}
-          <p className="text-xs text-ru-muted text-center">{filtered.length} voucher{filtered.length !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-ru-muted text-center">
+            {filtered.length} voucher{filtered.length !== 1 ? 's' : ''}
+          </p>
         </div>
       )}
     </div>

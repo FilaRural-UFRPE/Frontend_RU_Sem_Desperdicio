@@ -16,30 +16,36 @@ export default function AllSchedulesPage() {
   const [confirming, setConfirming] = useState(null)
   const { toast } = useToast()
 
-  const load = useCallback((filterDate = null) => {
-    setLoading(true)
-    setShowingAll(!filterDate)
-    scheduleAPI.allSchedules(filterDate)
-      .then(({ data }) => {
-        const raw = data?.data || []
-        const parsed = raw.map((s) => ({
-          id: s.id,
-          user_name: s.name ?? null,
-          user_cpf: s.user_cpf,
-          schedule_type: s.schedule_type,
-          meal_option: s.meal_option || s.meal_type || 'essencial',
-          schedule_date: s.schedule_date,
-          estimated_time: s.estimated_time,
-          status: s.status || 'AGENDADO',
-          created_at: s.created_at,
-        }))
-        setSchedules(parsed)
-      })
-      .catch(() => toast('Erro ao carregar agendamentos', 'error'))
-      .finally(() => setLoading(false))
-  }, [toast])
+  const load = useCallback(
+    (filterDate = null) => {
+      setLoading(true)
+      setShowingAll(!filterDate)
+      scheduleAPI
+        .allSchedules(filterDate)
+        .then(({ data }) => {
+          const raw = data?.data || []
+          const parsed = raw.map((s) => ({
+            id: s.id,
+            user_name: s.name ?? null,
+            user_cpf: s.user_cpf,
+            schedule_type: s.schedule_type,
+            meal_option: s.meal_option || s.meal_type || 'essencial',
+            schedule_date: s.schedule_date,
+            estimated_time: s.estimated_time,
+            status: s.status || 'AGENDADO',
+            created_at: s.created_at,
+          }))
+          setSchedules(parsed)
+        })
+        .catch(() => toast('Erro ao carregar agendamentos', 'error'))
+        .finally(() => setLoading(false))
+    },
+    [toast]
+  )
 
-  useEffect(() => { load(toBRDate(todayStr)) }, [load])
+  useEffect(() => {
+    load(toBRDate(todayStr))
+  }, [load])
 
   const handleDateChange = (e) => {
     const newDate = e.target.value
@@ -52,9 +58,7 @@ export default function AllSchedulesPage() {
     try {
       await scheduleAPI.confirm({ id })
       toast('Presença confirmada! ✅')
-      setSchedules((prev) =>
-        prev.map((s) => s.id === id ? { ...s, status: 'CONFIRMADO' } : s)
-      )
+      setSchedules((prev) => prev.map((s) => (s.id === id ? { ...s, status: 'CONFIRMADO' } : s)))
     } catch {
       toast('Erro ao confirmar presença', 'error')
     } finally {
@@ -71,8 +75,10 @@ export default function AllSchedulesPage() {
   })
 
   const statusBadge = (status) => {
-    if (status === 'CONFIRMADO') return <span className="tag bg-green-50 text-green-700">✅ Confirmado</span>
-    if (status === 'CANCELADO') return <span className="tag bg-red-50 text-red-600">❌ Cancelado</span>
+    if (status === 'CONFIRMADO')
+      return <span className="tag bg-green-50 text-green-700">✅ Confirmado</span>
+    if (status === 'CANCELADO')
+      return <span className="tag bg-red-50 text-red-600">❌ Cancelado</span>
     return <span className="tag bg-blue-50 text-blue-700">📋 Agendado</span>
   }
 
@@ -100,10 +106,7 @@ export default function AllSchedulesPage() {
           >
             <RefreshCw size={15} />
           </button>
-          <button
-            onClick={() => load(null)}
-            className="btn-primary px-4 py-2 text-sm"
-          >
+          <button onClick={() => load(null)} className="btn-primary px-4 py-2 text-sm">
             Ver todos
           </button>
         </div>
@@ -128,7 +131,9 @@ export default function AllSchedulesPage() {
       ) : filtered.length === 0 ? (
         <div className="card text-center py-12">
           <p className="text-4xl mb-3">📋</p>
-          <p className="font-display font-semibold text-ru-charcoal">Nenhum agendamento encontrado</p>
+          <p className="font-display font-semibold text-ru-charcoal">
+            Nenhum agendamento encontrado
+          </p>
           <p className="text-ru-muted font-body text-sm mt-1">
             {showingAll ? 'Sem agendamentos no sistema' : toBRDate(date)}
           </p>
@@ -139,7 +144,10 @@ export default function AllSchedulesPage() {
             <thead>
               <tr className="border-b border-ru-cream-dark">
                 {['Usuário', 'Refeição', 'Tipo', 'Data', 'Horário', 'Status', 'Ação'].map((h) => (
-                  <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-ru-muted uppercase tracking-wider">
+                  <th
+                    key={h}
+                    className="text-left px-5 py-3.5 text-xs font-semibold text-ru-muted uppercase tracking-wider"
+                  >
                     {h}
                   </th>
                 ))}
@@ -147,7 +155,10 @@ export default function AllSchedulesPage() {
             </thead>
             <tbody>
               {filtered.map((s) => (
-                <tr key={s.id} className="border-b border-ru-cream-dark last:border-0 hover:bg-ru-cream/40 transition-colors">
+                <tr
+                  key={s.id}
+                  className="border-b border-ru-cream-dark last:border-0 hover:bg-ru-cream/40 transition-colors"
+                >
                   <td className="px-5 py-3.5" data-label="Usuário">
                     <p className="font-medium text-ru-charcoal">{s.user_name ?? s.user_cpf}</p>
                     <p className="text-xs text-ru-muted">{s.user_name ? s.user_cpf : 'CPF'}</p>
@@ -158,9 +169,15 @@ export default function AllSchedulesPage() {
                   <td className="px-5 py-3.5" data-label="Tipo">
                     {MEAL_TYPE_LABELS[s.meal_option] || s.meal_option}
                   </td>
-                  <td className="px-5 py-3.5" data-label="Data">{s.schedule_date?.split('T')[0]}</td>
-                  <td className="px-5 py-3.5" data-label="Horário">{s.estimated_time?.slice(0, 5)}</td>
-                  <td className="px-5 py-3.5" data-label="Status">{statusBadge(s.status)}</td>
+                  <td className="px-5 py-3.5" data-label="Data">
+                    {s.schedule_date?.split('T')[0]}
+                  </td>
+                  <td className="px-5 py-3.5" data-label="Horário">
+                    {s.estimated_time?.slice(0, 5)}
+                  </td>
+                  <td className="px-5 py-3.5" data-label="Status">
+                    {statusBadge(s.status)}
+                  </td>
                   <td className="px-5 py-3.5" data-label="Ação">
                     <span className="cell-actions">
                       {s.status === 'AGENDADO' ? (
@@ -169,10 +186,7 @@ export default function AllSchedulesPage() {
                           disabled={confirming === s.id}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100 transition-colors disabled:opacity-50"
                         >
-                          {confirming === s.id
-                            ? <Spinner size={12} />
-                            : <CheckCircle size={13} />
-                          }
+                          {confirming === s.id ? <Spinner size={12} /> : <CheckCircle size={13} />}
                           Confirmar
                         </button>
                       ) : (
