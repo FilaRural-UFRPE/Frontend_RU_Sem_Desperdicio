@@ -1,27 +1,17 @@
 import { useState, useRef } from 'react'
 import { useToast } from '../../contexts/ToastContext'
 import Spinner from '../../components/ui/Spinner'
+import { menuAPI } from '../../services/api'
 import { UploadCloud, ImageIcon, CheckCircle, Brain } from 'lucide-react'
 import axios from 'axios'
 
-const ADMIN_API_KEY   = import.meta.env.VITE_ADMIN_API_KEY
 const MENU_ANALYZER_URL = import.meta.env.VITE_MENU_ANALYZER_URL || 'https://smartru-menu-analyzer.onrender.com'
 
 async function uploadMenu(lunchFile, dinnerFile) {
   const formData = new FormData()
   formData.append('file', lunchFile)
   if (dinnerFile) formData.append('dinner_file', dinnerFile)
-
-  const response = await axios.post(
-    'https://semdesperdicio.smartru.com.br/api/menu/upload',
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${ADMIN_API_KEY}`,
-      },
-    }
-  )
+  const response = await menuAPI.upload(formData)
   return response.data
 }
 
@@ -153,7 +143,7 @@ export default function MenuUploadPage() {
       }
 
     } catch (err) {
-      if (err.response?.status === 401) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
         toast('Sem permissão para fazer upload', 'error')
       } else if (err.response?.status === 400) {
         toast('Ficheiro inválido. Use PNG ou JPG até 10MB.', 'error')
