@@ -26,7 +26,7 @@ function pemToRawPublicKey(pem) {
 
 export function parseQRData(qrString) {
   const parsed = JSON.parse(qrString)
-  if (parsed.v !== 1 || !Number.isInteger(parsed.id) || !parsed.c || !parsed.n || !parsed.s || !parsed.e) {
+  if (![1, 2].includes(parsed.v) || !Number.isInteger(parsed.id) || !parsed.c || !parsed.n || !parsed.s || !parsed.e) {
     throw new Error('Este QR não é um voucher SmartRU válido')
   }
   return parsed
