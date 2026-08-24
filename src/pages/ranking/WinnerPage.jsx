@@ -88,13 +88,20 @@ export default function WinnerPage() {
   }
 
   const drawRaffle = async () => {
+    const confirmed = window.confirm(
+      `Realizar sorteio de ${monthLabel}?\n\nOs participantes elegíveis serão sorteados e os vencedores notificados.`
+    )
+    if (!confirmed) return
+
     setDrawing(true)
     setDrawResult(null)
     try {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-      const endDate = `${year}-${String(month).padStart(2, '0')}-28`
+      const lastDay = new Date(year, month, 0).getDate()
+      const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
       const createRes = await rankingAPI.raffleCreate(`Sorteio ${monthLabel}`, startDate, endDate, 1)
-      const raffleId = createRes.data.data.id
+      const raffleId = createRes.data?.data?.id
+      if (!raffleId) throw new Error('Erro ao criar sorteio')
       const drawRes = await rankingAPI.raffleDraw(raffleId)
       setDrawResult(drawRes.data)
       toast(`Sorteio realizado! ${drawRes.data.winners.length} vencedor(es) de ${drawRes.data.total_participants} participantes.`)
@@ -191,7 +198,7 @@ export default function WinnerPage() {
                 {!rankData?.data?.length ? (
                   <tr className="empty"><td colSpan="6" className="py-10 text-center text-ru-muted" data-label="">Nenhum dado para este mês.</td></tr>
                 ) : rankData.data.map((entry) => {
-                  const isWinner = winner && entry.name === winner.name
+                  const isWinner = winner && entry.cpf === winner.user_cpf
                   return (
                     <tr key={`${entry.rank}-${entry.name}`} className={`border-b border-ru-cream/60 ${isWinner ? 'bg-emerald-50' : ''}`}>
                       <td className="py-3 pr-3 font-display text-lg" data-label="Posição">{medal(entry.rank)} <span className="font-mono text-sm">{entry.rank}</span></td>
