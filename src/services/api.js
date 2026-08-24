@@ -123,7 +123,8 @@ export const notificationAPI = {
 // ─── Vouchers ─────────────────────────────────────────
 export const voucherAPI = {
   mine: () => api.get('/voucher/my'),
-  generate: () => api.post('/voucher/generate'),
+  generate: (targetCpf) => api.post('/voucher/generate', { target_cpf: targetCpf || null }),
+  availableWinners: () => api.get('/voucher/available-winners'),
   publicKey: () => api.get('/voucher/public-key'),
   validate: (data) => api.post('/voucher/validate', data),
   sync: (usages) => api.post('/voucher/sync', { usages }),
@@ -144,6 +145,21 @@ export const reportAPI = {
     if (endDate) params.end_date = toBRDate(endDate)
     return api.get('/report/consumption', { params })
   },
+}
+
+// ─── Ranking / Leaderboard ────────────────────────────
+export const rankingAPI = {
+  list: (mes, page = 1, limit = 10) =>
+    api.get('/ranking', { params: { mes, page, limit } }),
+  winner: (mes) =>
+    api.get('/ranking/winner', { params: { mes } }),
+  importCsv: (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post('/ranking/import-csv', form)
+  },
+  setWinner: (year, month, user_cpf) =>
+    api.post('/ranking/winner', { year, month, user_cpf }),
 }
 
 export default api

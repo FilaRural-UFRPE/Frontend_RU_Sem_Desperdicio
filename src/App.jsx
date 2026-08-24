@@ -25,6 +25,12 @@ import AllSchedulesPage from './pages/staff/AllSchedulesPage'
 import ReportsPage from './pages/staff/ReportsPage'
 import MenuUploadPage from './pages/staff/MenuUploadPage' // ✅ adicionado
 import VoucherValidatePage from './pages/staff/VoucherValidatePage'
+import VoucherGeneratePage from './pages/staff/VoucherGeneratePage'
+
+// Ranking / Leaderboard
+import RankingPage from './pages/ranking/RankingPage'
+import ImportCsvPage from './pages/ranking/ImportCsvPage'
+import WinnerPage from './pages/ranking/WinnerPage'
 
 // Utilitários
 import NotFoundPage from './pages/NotFoundPage'
@@ -143,6 +149,40 @@ export default function App() {
               element={
                 <ProtectedRoute allowedTypes={['funcionario']}>
                   <AppLayout><VoucherValidatePage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/voucher/gerar"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><VoucherGeneratePage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Ranking (qualquer usuário logado) */}
+            <Route
+              path="/ranking"
+              element={
+                <ProtectedRoute>
+                  <AppLayout><RankingPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Exclusivo funcionário: importar presenças e definir vencedor */}
+            <Route
+              path="/ranking/importar"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><ImportCsvPage /></AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ranking/vencedor"
+              element={
+                <ProtectedRoute allowedTypes={['funcionario']}>
+                  <AppLayout><WinnerPage /></AppLayout>
                 </ProtectedRoute>
               }
             />

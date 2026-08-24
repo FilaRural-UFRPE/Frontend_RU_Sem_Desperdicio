@@ -134,8 +134,8 @@ export default function AllSchedulesPage() {
           </p>
         </div>
       ) : (
-        <div className="card overflow-x-auto p-0">
-          <table className="w-full text-sm font-body">
+        <div className="card p-0">
+          <table className="responsive-table w-full text-sm font-body">
             <thead>
               <tr className="border-b border-ru-cream-dark">
                 {['Usuário', 'Refeição', 'Tipo', 'Data', 'Horário', 'Status', 'Ação'].map((h) => (
@@ -148,35 +148,37 @@ export default function AllSchedulesPage() {
             <tbody>
               {filtered.map((s) => (
                 <tr key={s.id} className="border-b border-ru-cream-dark last:border-0 hover:bg-ru-cream/40 transition-colors">
-                  <td className="px-5 py-3.5">
+                  <td className="px-5 py-3.5" data-label="Usuário">
                     <p className="font-medium text-ru-charcoal">{s.user_name ?? s.user_cpf}</p>
                     <p className="text-xs text-ru-muted">{s.user_name ? s.user_cpf : 'CPF'}</p>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="px-5 py-3.5" data-label="Refeição">
                     {s.schedule_type === 'lunch' ? '🍽️ Almoço' : '🌙 Jantar'}
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="px-5 py-3.5" data-label="Tipo">
                     {MEAL_TYPE_LABELS[s.meal_option] || s.meal_option}
                   </td>
-                  <td className="px-5 py-3.5">{s.schedule_date?.split('T')[0]}</td>
-                  <td className="px-5 py-3.5">{s.estimated_time?.slice(0, 5)}</td>
-                  <td className="px-5 py-3.5">{statusBadge(s.status)}</td>
-                  <td className="px-5 py-3.5">
-                    {s.status === 'AGENDADO' ? (
-                      <button
-                        onClick={() => handleConfirm(s.id)}
-                        disabled={confirming === s.id}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100 transition-colors disabled:opacity-50"
-                      >
-                        {confirming === s.id
-                          ? <Spinner size={12} />
-                          : <CheckCircle size={13} />
-                        }
-                        Confirmar
-                      </button>
-                    ) : (
-                      <span className="text-xs text-ru-muted">—</span>
-                    )}
+                  <td className="px-5 py-3.5" data-label="Data">{s.schedule_date?.split('T')[0]}</td>
+                  <td className="px-5 py-3.5" data-label="Horário">{s.estimated_time?.slice(0, 5)}</td>
+                  <td className="px-5 py-3.5" data-label="Status">{statusBadge(s.status)}</td>
+                  <td className="px-5 py-3.5" data-label="Ação">
+                    <span className="cell-actions">
+                      {s.status === 'AGENDADO' ? (
+                        <button
+                          onClick={() => handleConfirm(s.id)}
+                          disabled={confirming === s.id}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100 transition-colors disabled:opacity-50"
+                        >
+                          {confirming === s.id
+                            ? <Spinner size={12} />
+                            : <CheckCircle size={13} />
+                          }
+                          Confirmar
+                        </button>
+                      ) : (
+                        <span className="text-xs text-ru-muted">—</span>
+                      )}
+                    </span>
                   </td>
                 </tr>
               ))}

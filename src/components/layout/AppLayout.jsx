@@ -4,7 +4,7 @@ import Logo from '../ui/Logo'
 import {
   LayoutDashboard, Calendar, History, User, LogOut,
   BarChart3, ClipboardList, Menu, Lock, UtensilsCrossed, UploadCloud,
-  Gift, ScanLine,
+  Gift, ScanLine, Trophy, Crown, FileSpreadsheet,
 } from 'lucide-react'
 import { useState } from 'react'
 import { userTypeLabel } from '../../utils/helpers'
@@ -15,6 +15,7 @@ const studentLinks = [
   { to: '/historico', icon: History, label: 'Histórico' },
   { to: '/cardapio', icon: UtensilsCrossed, label: 'Cardápio da Semana' },
   { to: '/voucher', icon: Gift, label: 'Meu voucher' },
+  { to: '/ranking', icon: Trophy, label: 'Ranking' },
   { to: '/perfil', icon: User, label: 'Perfil' },
   { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]
@@ -23,8 +24,12 @@ const staffLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral' },
   { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
   { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
+  { to: '/voucher/gerar', icon: Gift, label: 'Gerar voucher' },
   { to: '/voucher/validar', icon: ScanLine, label: 'Validar voucher' },
-  { to: '/cardapio-upload', icon: UploadCloud, label: 'Publicar Cardápio' }, // ✅ adicionado
+  { to: '/ranking', icon: Trophy, label: 'Ranking' },
+  { to: '/ranking/importar', icon: FileSpreadsheet, label: 'Importar presenças' },
+  { to: '/ranking/vencedor', icon: Crown, label: 'Vencedor do mês' },
+  { to: '/cardapio-upload', icon: UploadCloud, label: 'Publicar Cardápio' },
   { to: '/perfil', icon: User, label: 'Perfil' },
   { to: '/alterar-senha', icon: Lock, label: 'Alterar senha' },
 ]
