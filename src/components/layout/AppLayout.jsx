@@ -19,6 +19,8 @@ import {
   Crown,
   FileSpreadsheet,
   Shuffle,
+  CircleDot,
+  ScrollText,
   Megaphone,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -39,9 +41,12 @@ const staffLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral' },
   { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
   { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
+  { to: '/roleta', icon: CircleDot, label: 'Roleta de prêmios' },
   { to: '/avisos', icon: Megaphone, label: 'Avisos' },
   { to: '/voucher/gerar', icon: Gift, label: 'Gerar voucher' },
   { to: '/voucher/validar', icon: ScanLine, label: 'Validar voucher' },
+  { to: '/voucher/caixa', icon: UtensilsCrossed, label: 'Caixa do evento' },
+  { to: '/voucher/evento-historico', icon: ScrollText, label: 'Vouchers do evento' },
   { to: '/ranking', icon: Trophy, label: 'Ranking' },
   { to: '/ranking/importar', icon: FileSpreadsheet, label: 'Importar presenças' },
   { to: '/ranking/sorteios', icon: Shuffle, label: 'Sorteios' },

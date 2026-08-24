@@ -23,6 +23,9 @@ const ReportsPage = lazy(() => import('./pages/staff/ReportsPage'))
 const MenuUploadPage = lazy(() => import('./pages/staff/MenuUploadPage'))
 const VoucherValidatePage = lazy(() => import('./pages/staff/VoucherValidatePage'))
 const VoucherGeneratePage = lazy(() => import('./pages/staff/VoucherGeneratePage'))
+const RoletaPage = lazy(() => import('./pages/staff/RoletaPage'))
+const CashierPage = lazy(() => import('./pages/staff/CashierPage'))
+const EventVoucherHistoryPage = lazy(() => import('./pages/staff/EventVoucherHistoryPage'))
 const AnnouncementsPage = lazy(() => import('./pages/staff/AnnouncementsPage'))
 const RankingPage = lazy(() => import('./pages/ranking/RankingPage'))
 const ImportCsvPage = lazy(() => import('./pages/ranking/ImportCsvPage'))
@@ -178,6 +181,39 @@ export default function App() {
                   <ProtectedRoute allowedTypes={['funcionario']}>
                     <AppLayout>
                       <VoucherGeneratePage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Roleta da campanha RU Sem Desperdício */}
+              <Route
+                path="/roleta"
+                element={
+                  <ProtectedRoute allowedTypes={['funcionario']}>
+                    <AppLayout>
+                      <RoletaPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Caixa do evento: confirmação de refeições dos vouchers */}
+              <Route
+                path="/voucher/caixa"
+                element={
+                  <ProtectedRoute allowedTypes={['funcionario']}>
+                    <AppLayout>
+                      <CashierPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Histórico de vouchers de evento */}
+              <Route
+                path="/voucher/evento-historico"
+                element={
+                  <ProtectedRoute allowedTypes={['funcionario']}>
+                    <AppLayout>
+                      <EventVoucherHistoryPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
