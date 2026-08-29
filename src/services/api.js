@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://semdesperdicio.smartru.com.br/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://smartru.com.br/api',
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true, // envia cookies HttpOnly automaticamente
 })

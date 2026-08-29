@@ -3,6 +3,7 @@ import { useToast } from '../../contexts/ToastContext'
 import Spinner from '../../components/ui/Spinner'
 import { UploadCloud, ImageIcon, CheckCircle, Brain } from 'lucide-react'
 import axios from 'axios'
+import api from '../../services/api'
 
 const ADMIN_API_KEY   = import.meta.env.VITE_ADMIN_API_KEY
 const MENU_ANALYZER_URL = import.meta.env.VITE_MENU_ANALYZER_URL || 'https://smartru-menu-analyzer.onrender.com'
@@ -12,8 +13,10 @@ async function uploadMenu(lunchFile, dinnerFile) {
   formData.append('file', lunchFile)
   if (dinnerFile) formData.append('dinner_file', dinnerFile)
 
-  const response = await axios.post(
-    'https://semdesperdicio.smartru.com.br/api/menu/upload',
+  // Reaproveita o cliente Axios central (services/api.js), que já usa
+  // VITE_API_URL / o dominio correto de producao como baseURL.
+  const response = await api.post(
+    '/menu/upload',
     formData,
     {
       headers: {
@@ -31,6 +34,8 @@ async function analyzeMenu(menuId, lunchFile, dinnerFile) {
   formData.append('lunch_file', lunchFile)
   if (dinnerFile) formData.append('dinner_file', dinnerFile)
 
+  // Servico separado (Menu Analyzer), continua com axios "puro" pois
+  // tem dominio proprio, diferente do backend principal do SmartRU.
   const response = await axios.post(
     `${MENU_ANALYZER_URL}/analyze/both?menu_id=${menuId}`,
     formData,
